@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from fixing_bias import oversample_by_weight, bias_output_dir, LABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import oversample_by_weight, bias_output_dir, LABELLED_TRAITS_IN_ALL_REGIONS, \
     known_biasing_features, UNLABELLED_TRAITS_IN_ALL_REGIONS, to_target_encode
 from import_trait_data import TARGET_COLUMN
 
@@ -41,19 +41,6 @@ def summarise_activites():
     out = out.transpose()
     out.to_csv(os.path.join(summary_output_dir, 'corrected_activities.csv'))
 
-    # Active vs. inactive
-    # active_df = ratio_corrected_df[ratio_corrected_df[TARGET_COLUMN] == 2]
-    # inactive_df = ratio_corrected_df[ratio_corrected_df[TARGET_COLUMN] != 2]
-    #
-    # compare_active_vs_inactive(active_df, inactive_df, summary_output_dir)
-    #
-    # venn_diagram(ratio_corrected_df, summary_output_dir)
-
-    # families
-    # apoc_activity = \
-    # ratio_corrected_df[ratio_corrected_df['Family'] == 'Apocynaceae'].describe().loc[['mean']].values.tolist()[0]
-    # rub_activity = \
-    # ratio_corrected_df[ratio_corrected_df['Family'] == 'Rubiaceae'].describe().loc[['mean']].values.tolist()[0]
 
 
 def main():

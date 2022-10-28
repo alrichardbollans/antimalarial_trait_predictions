@@ -2,11 +2,11 @@ import os
 
 import pandas as pd
 
-from fixing_bias import bias_output_dir, LABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import bias_output_dir, LABELLED_TRAITS_IN_ALL_REGIONS, \
     ALL_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, \
     vars_to_use_in_bias_analysis
 from import_trait_data import DISCRETE_VARS, \
-    LABELLED_TRAITS_CSV, FINAL_TRAITS_CSV, CONTINUOUS_VARS
+    CONTINUOUS_VARS
 from stats_methods import compare_sample_distributions, plot_means_all_vs_labelled, holm_bonferroni_correction
 
 quantbias_output_dir = os.path.join(bias_output_dir, 'quantifying bias')
@@ -24,22 +24,6 @@ def quantify_given_bias():
     holm_df = pd.concat([cont_df, disc_df])
     holm_df = holm_bonferroni_correction(holm_df, 'p_value')
     holm_df.to_csv(os.path.join(quantbias_output_dir, 'given_bias_corrected.csv'))
-
-    LABELLED_TRAITS = pd.read_csv(LABELLED_TRAITS_CSV, index_col=0)[vars_to_use_in_bias_analysis]
-    ALL_TRAITS = pd.read_csv(FINAL_TRAITS_CSV, index_col=0)[vars_to_use_in_bias_analysis]
-
-    df_mal_regions = compare_sample_distributions(LABELLED_TRAITS, ALL_TRAITS,
-                                                  os.path.join(quantbias_output_dir,
-                                                               'given_bias_within_malarial_regions.csv'))
-
-    cont_df = df_mal_regions[~df_mal_regions['ks_p_value'].isna()]
-    cont_df = cont_df[['Feature', 'ks_p_value']].rename(columns={'ks_p_value': 'p_value'})
-    disc_df = df_mal_regions[df_mal_regions['ks_p_value'].isna()]
-    disc_df = disc_df[['Feature', 'chi2_p']].rename(columns={'chi2_p': 'p_value'})
-
-    holm_df = pd.concat([cont_df, disc_df])
-    holm_df = holm_bonferroni_correction(holm_df, 'p_value')
-    holm_df.to_csv(os.path.join(quantbias_output_dir, 'given_bias_within_malarial_regions_corrected.csv'))
 
 
 def summarise_traits():

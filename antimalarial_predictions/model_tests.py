@@ -8,7 +8,7 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
 
-from fixing_bias import LABELLED_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, append_weight_column, \
+from bias_correction_and_summaries import LABELLED_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, append_weight_column, \
     vars_without_target_to_use, known_biasing_features, logit_correction, bias_output_dir, vars_to_use_in_bias_analysis, \
     ALL_TRAITS_IN_ALL_REGIONS
 from general_preprocessing_and_testing import basic_data_prep, clf_scores, FeatureModel, \

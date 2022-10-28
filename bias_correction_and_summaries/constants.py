@@ -2,7 +2,7 @@ import pandas as pd
 from pkg_resources import resource_filename
 
 from import_trait_data import TAXA_IN_ALL_REGIONS_CSV, \
-    TARGET_COLUMN, NUMERIC_TRAITS, ALK_CLASS_VARS
+    TARGET_COLUMN, NUMERIC_TRAITS
 
 vars_without_target_to_use = [x for x in NUMERIC_TRAITS if
                               (x not in [
@@ -11,7 +11,7 @@ vars_without_target_to_use = [x for x in NUMERIC_TRAITS if
                                   'Cardenolides',
                                   'Hairs',
                                   'Spines',
-                                  'AntiBac_Metabolites'] + ALK_CLASS_VARS)] + [
+                                  'AntiBac_Metabolites'])] + [
                                  'Family', 'Genus', 'kg_mode']
 vars_to_use_in_bias_analysis = vars_without_target_to_use + [TARGET_COLUMN]
 

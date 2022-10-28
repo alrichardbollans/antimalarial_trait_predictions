@@ -6,7 +6,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from pkg_resources import resource_filename
 
-from fixing_bias import oversample_by_weight, ALL_TRAITS_IN_ALL_REGIONS, LABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import oversample_by_weight, ALL_TRAITS_IN_ALL_REGIONS, LABELLED_TRAITS_IN_ALL_REGIONS, \
     vars_to_use_in_bias_analysis, known_biasing_features, UNLABELLED_TRAITS_IN_ALL_REGIONS, to_target_encode
 from import_trait_data import BINARY_VARS, NUMERIC_TRAITS, CONTINUOUS_VARS, HABIT_COLS, DISCRETE_VARS
 

@@ -7,7 +7,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from pkg_resources import resource_filename
 
-from fixing_bias import vars_to_use_in_bias_analysis, ALL_TRAITS_IN_ALL_REGIONS
+from bias_correction_and_summaries import vars_to_use_in_bias_analysis, ALL_TRAITS_IN_ALL_REGIONS
 from import_trait_data import TARGET_COLUMN, BINARY_VARS, HABIT_COLS
 
 _output_path = resource_filename(__name__, 'outputs')

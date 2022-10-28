@@ -1,9 +1,7 @@
 import pandas as pd
 
-from import_trait_data import ACCEPTED_NAME_COLUMN, TARGET_COLUMN, COLUMNS_TO_DROP, NAME_COLUMNS, GENERA_LIST_CSV, \
-    SPECIES_LIST_CSV, TEMP_ALL_TRAITS_CSV, FINAL_TRAITS_CSV, LABELLED_TRAITS_CSV, UNLABELLED_TRAITS_CSV, \
-    TRAITS_WITHOUT_NANS, GENERA_VARS, TRAITS, TAXONOMIC_VARS, NON_MALARIAL_TRAITS_CSV, TAXA_IN_ALL_REGIONS_CSV, \
-    TEMP_ALKALOID_CLASS_DATA_CSV, TAXA_TESTED_FOR_ALK_CLASSES_IN_ALL_REGIONS_CSV, NON_MALARIAL_LABELLED_TRAITS_CSV
+from import_trait_data import ACCEPTED_NAME_COLUMN, TARGET_COLUMN, COLUMNS_TO_DROP, NAME_COLUMNS, TEMP_ALL_TRAITS_CSV, \
+    TRAITS_WITHOUT_NANS, GENERA_VARS, TRAITS, TAXONOMIC_VARS, TAXA_IN_ALL_REGIONS_CSV
 
 
 def remove_samples_with_no_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -69,20 +67,6 @@ def get_genus_species_list(lab_df: pd.DataFrame, unlab_df: pd.DataFrame):
                 dict_list[lname] += [padel] * (lmax - ll)
         return dict_list
 
-    lab_genera = list(lab_df['Genus'].unique())
-    unlab_genera = list(unlab_df['Genus'].unique())
-    out = {'Labelled': lab_genera, 'Unlabelled': unlab_genera}
-    out = pad_dict_list(out, '')
-    gen_df = pd.DataFrame(out)
-    gen_df.to_csv(GENERA_LIST_CSV)
-
-    lab_sps = list(lab_df['Accepted_Species'].unique())
-    unlab_sps = list(unlab_df['Accepted_Species'].unique())
-    out = {'Labelled': lab_sps, 'Unlabelled': unlab_sps}
-    out = pad_dict_list(out, '')
-    sp_df = pd.DataFrame(out)
-    sp_df.to_csv(SPECIES_LIST_CSV)
-
 
 def standardise_output(df: pd.DataFrame, out_csv: str = None):
     df = remove_samples_with_no_data(df)
@@ -96,14 +80,6 @@ def standardise_output(df: pd.DataFrame, out_csv: str = None):
         df.to_csv(out_csv)
 
     return df
-
-
-def get_subset_of_data_tested_for_alkaloid_classes(df: pd.DataFrame):
-    alk_class_temp_df = pd.read_csv(TEMP_ALKALOID_CLASS_DATA_CSV)
-    tested_species = alk_class_temp_df['Accepted_Species'].unique()
-    tested_df = df[df['Accepted_Species'].isin(tested_species)]
-
-    return tested_df
 
 
 def main():
@@ -129,37 +105,10 @@ def main():
             'Variables should only appear in this comparison when they have been given in the trait table at species level but updated at genera level')
 
     # Remove taxa not in malarial regions
-    non_malarial_taxa = trait_df[~(trait_df['In_Malarial_Region'] == 1)]
-    non_malarial_taxa = standardise_output(non_malarial_taxa, NON_MALARIAL_TRAITS_CSV)
-    print('Number labelled taxa not found in malarial regions: ')
-    non_malarial_labelled = non_malarial_taxa[~non_malarial_taxa['Activity_Antimalarial'].isna()]
-    print(len(non_malarial_labelled.index))
-    non_malarial_labelled.to_csv(NON_MALARIAL_LABELLED_TRAITS_CSV)
 
     taxa_in_all_regions = trait_df.copy(deep=True)
     taxa_in_all_regions = standardise_output(taxa_in_all_regions)
     taxa_in_all_regions.to_csv(TAXA_IN_ALL_REGIONS_CSV)
-
-    tested_alk_data = get_subset_of_data_tested_for_alkaloid_classes(taxa_in_all_regions)
-    tested_alk_data.to_csv(TAXA_TESTED_FOR_ALK_CLASSES_IN_ALL_REGIONS_CSV)
-
-    trait_df = trait_df[trait_df['In_Malarial_Region'] == 1]
-    trait_df = standardise_output(trait_df)
-
-    # Remove unspecified activity values
-    labelled_trait_df = trait_df.drop(trait_df[trait_df[TARGET_COLUMN].isna()].index,
-                                      inplace=False)
-    labelled_trait_df = labelled_trait_df.astype(dtype={TARGET_COLUMN: "int64"})
-
-    unlabelled_trait_df = trait_df.drop(trait_df[~trait_df[TARGET_COLUMN].isna()].index, inplace=False)
-    unlabelled_trait_df = unlabelled_trait_df.drop(columns=[TARGET_COLUMN],
-                                                   inplace=False)
-
-    get_genus_species_list(labelled_trait_df, unlabelled_trait_df)
-
-    trait_df.to_csv(FINAL_TRAITS_CSV)
-    labelled_trait_df.to_csv(LABELLED_TRAITS_CSV)
-    unlabelled_trait_df.to_csv(UNLABELLED_TRAITS_CSV)
 
 
 if __name__ == '__main__':

@@ -53,28 +53,11 @@ FAMILY_TAXA_CSV = os.path.join(IMPORT_TEMP_OUTPUT_DIR, 'wcvp_family.csv')
 TRAIT_CSV_WITH_EXTRA_TAXA = os.path.join(IMPORT_TEMP_OUTPUT_DIR, "traits_with_extra_taxa.csv")
 
 IMPORT_OUTPUT_DIR = resource_filename(__name__, "outputs")
-IMPORT_OUTPUT_DIR_FOR_MALARIAL_REGIONS = os.path.join(IMPORT_OUTPUT_DIR, 'in malarial regions')
-
-FINAL_TRAITS_CSV = os.path.join(IMPORT_OUTPUT_DIR_FOR_MALARIAL_REGIONS, "all_traits.csv")
-LABELLED_TRAITS_CSV = os.path.join(IMPORT_OUTPUT_DIR_FOR_MALARIAL_REGIONS, "labelled_final_trait.csv")
-UNLABELLED_TRAITS_CSV = os.path.join(IMPORT_OUTPUT_DIR_FOR_MALARIAL_REGIONS, "unlabelled_final_trait.csv")
-GENERA_LIST_CSV = os.path.join(IMPORT_OUTPUT_DIR_FOR_MALARIAL_REGIONS, "genera_list.csv")
-SPECIES_LIST_CSV = os.path.join(IMPORT_OUTPUT_DIR_FOR_MALARIAL_REGIONS, "species_list.csv")
 
 # Outputs not restricted by malarial regions
 IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION = os.path.join(IMPORT_OUTPUT_DIR, 'not restricted by region')
 TAXA_IN_ALL_REGIONS_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION, "all_traits.csv")
-TAXA_TESTED_FOR_ALK_CLASSES_IN_ALL_REGIONS_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION,
-                                                              "all_traits_tested_for_alk_classes.csv")
-RAW_TRAITS_SUMMARY_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION, "species_level_traits_summary.csv")
-RAW_LABELLED_TRAITS_SUMMARY_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION,
-                                               "species_level_labelled_traits_summary.csv")
-SPECIES_LEVEL_TRAITS = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION,
-                                    "species_level_traits.csv")
-TEMP_ALKALOID_CLASS_DATA_CSV = os.path.join(IMPORT_TEMP_OUTPUT_DIR, 'alkaloid_classes.csv')
 
-NON_MALARIAL_TRAITS_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION, "non_malarial_traits.csv")
-NON_MALARIAL_LABELLED_TRAITS_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION, "labelled_non_malarial_traits.csv")
 FAMILIES_OF_INTEREST = [
     "Apocynaceae",
     "Rubiaceae",
@@ -97,14 +80,8 @@ HABIT_COLS = ["habit_hb",
               "habit_subsh",
               "habit_tr"]
 
-ALK_CLASS_VARS = ['alk_diterpenoid', 'alk_imidazole', 'alk_indole', 'alk_indolizidine', 'alk_indolizine(to_confirm)',
-                  'alk_isoquinoline', 'alk_mia', 'alk_misc. one n', 'alk_misc. two n', 'alk_monoterpene',
-                  'alk_naphthyridine', 'alk_peptide', 'alk_piperidine', 'alk_purine', 'alk_pyrazine', 'alk_pyridine',
-                  'alk_pyrrole', 'alk_pyrrolidine', 'alk_pyrrolizidine', 'alk_quinazoline', 'alk_quinoline',
-                  'alk_quinolizidine', 'alk_simple amine', 'alk_spermidine', 'alk_steroidal', 'alk_to_confirm']
-
 COMPOUND_PRESENCE_VARS = ["AntiBac_Metabolites", "Alkaloids", "Cardenolides",
-                          "Steroids"] + ALK_CLASS_VARS
+                          "Steroids"]
 
 GENERA_VARS = ["Richness", "Spines",
                "Emergence",

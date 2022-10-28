@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from fixing_bias import oversample_by_weight, LABELLED_TRAITS_IN_ALL_REGIONS, bias_output_dir, \
+from bias_correction_and_summaries import oversample_by_weight, LABELLED_TRAITS_IN_ALL_REGIONS, bias_output_dir, \
     known_biasing_features, UNLABELLED_TRAITS_IN_ALL_REGIONS, to_target_encode
 from import_trait_data import TARGET_COLUMN
 

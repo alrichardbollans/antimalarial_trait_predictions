@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 # Add progress bar to apply method
@@ -27,8 +25,7 @@ from climate_vars import compiled_climate_vars_csv
 from common_name_vars import output_common_names_csv
 from import_trait_data import FAMILIES_OF_INTEREST, FAMILY_TAXA_CSV, TRAIT_CSV_WITH_EXTRA_TAXA, \
     TEMP_ALL_TRAITS_CSV, \
-    ENVIRON_VARS, GENERA_VARS, DISCRETE_VARS, NON_NUMERIC_TRAITS, CONTINUOUS_VARS, IMPORT_TEMP_OUTPUT_DIR, \
-    TARGET_COLUMN, TEMP_ALKALOID_CLASS_DATA_CSV, ALK_CLASS_VARS
+    ENVIRON_VARS, GENERA_VARS, DISCRETE_VARS, NON_NUMERIC_TRAITS, CONTINUOUS_VARS, TARGET_COLUMN
 from getting_malarial_regions import taxa_in_malarial_countries_csv
 from medicinal_usage_vars import output_medicinal_csv, output_malarial_csv
 from morphological_vars import spines_output_csv, hairy_output_csv, no_spines_output_csv, habits_output_csv
@@ -388,9 +385,6 @@ def main():
                    level='species')
     updated_trait_df = merge_new_vars_from_data(updated_trait_df, ENVIRON_VARS,
                                                 [compiled_climate_vars_csv, logan_compiled_climate_vars_csv],
-                                                level='species')
-
-    updated_trait_df = merge_new_vars_from_data(updated_trait_df, ALK_CLASS_VARS, [TEMP_ALKALOID_CLASS_DATA_CSV],
                                                 level='species')
 
     update_hit_var(updated_trait_df, 'Cardenolides',

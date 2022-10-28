@@ -9,17 +9,14 @@ from logan_metabolite_vars import logan_alkaloid_hits_output_csv
 from metabolite_vars import rub_apoc_alkaloid_hits_output_csv
 from pkg_resources import resource_filename
 
-from import_trait_data import FINAL_TRAITS_CSV, \
-    ACCEPTED_NAME_COLUMN, TRAITS_WITHOUT_NANS, TRAITS_WITH_NANS, \
-    LABELLED_TRAITS_CSV, UNLABELLED_TRAITS_CSV, TARGET_COLUMN, GENERA_VARS, HABIT_COLS, DISCRETE_VARS, \
-    TAXA_IN_ALL_REGIONS_CSV, ALK_CLASS_VARS, TEMP_ALL_TRAITS_CSV
+from import_trait_data import ACCEPTED_NAME_COLUMN, TRAITS_WITHOUT_NANS, TRAITS_WITH_NANS, \
+    TARGET_COLUMN, GENERA_VARS, HABIT_COLS, DISCRETE_VARS, \
+    TAXA_IN_ALL_REGIONS_CSV, TEMP_ALL_TRAITS_CSV
 from manually_collected_data import replace_yes_no_in_column
 
-labelled_output = pd.read_csv(LABELLED_TRAITS_CSV)
-unlabelled_output = pd.read_csv(UNLABELLED_TRAITS_CSV)
 taxa_in_all_regions = pd.read_csv(TAXA_IN_ALL_REGIONS_CSV)
-
-all_data = pd.read_csv(FINAL_TRAITS_CSV)
+labelled_output = taxa_in_all_regions[~(taxa_in_all_regions[TARGET_COLUMN].isna())]
+unlabelled_output = taxa_in_all_regions[taxa_in_all_regions[TARGET_COLUMN].isna()]
 
 _test_output_dir = resource_filename(__name__, 'test_outputs')
 
@@ -47,13 +44,8 @@ class Test(unittest.TestCase):
                 temp_df['Alkaloids_test_notes'].isna() & temp_df['Alkaloid_classes'].isna())]
 
         # Species which need updating in trait tables
-        self.assertEqual(len(problem_df.index),0, msg=problem_df)
-
-    def test_check_non_malarial_taxa_not_present(self):
-        non_malarial_ids = ['77197401-1', '21200-2', '77167599-1', '102673-1']
-
-        for id in non_malarial_ids:
-            self.assertNotIn(id, all_data['Accepted_ID'].to_list())
+        # Likely known alkaloids from KN but not been added to manual table
+        self.assertEqual(len(problem_df.index), 0, msg=problem_df)
 
     def test_replace_yes_no_in_column(self):
         test_dict = {'0': ['no', 'No', ' no', 'No '],
@@ -74,7 +66,7 @@ class Test(unittest.TestCase):
     def test_output_types(self):
 
         # Test columns are almost the same
-        self.assertEqual(labelled_output.columns.tolist()[:-1], unlabelled_output.columns.tolist())
+        self.assertEqual(labelled_output.columns.tolist(), unlabelled_output.columns.tolist())
 
         # Test Types
         float_columns = []
@@ -82,7 +74,7 @@ class Test(unittest.TestCase):
         int_columns = ['Poisonous', 'Medicinal', 'Antimalarial_Use',
                        'Alkaloids']
 
-        self.assertEqual(labelled_output[TARGET_COLUMN].values.dtype, np.dtype('int64'))
+        self.assertEqual(labelled_output[TARGET_COLUMN].values.dtype, np.dtype('float64'))
 
         for c in float_columns:
             print(c)
@@ -91,21 +83,20 @@ class Test(unittest.TestCase):
             print(labelled_output[c].values)
             self.assertEqual(labelled_output[c].values.dtype, np.dtype(float))
             self.assertEqual(unlabelled_output[c].values.dtype, np.dtype(float))
-            self.assertEqual(all_data[c].values.dtype, np.dtype(float))
+            self.assertEqual(taxa_in_all_regions[c].values.dtype, np.dtype(float))
 
         for c in str_columns:
             self.assertEqual(labelled_output[c].values.dtype, np.dtype(object))
             self.assertEqual(unlabelled_output[c].values.dtype, np.dtype(object))
-            self.assertEqual(all_data[c].values.dtype, np.dtype(object))
+            self.assertEqual(taxa_in_all_regions[c].values.dtype, np.dtype(object))
 
         for c in int_columns:
-            
             self.assertTrue((labelled_output[c].values.dtype == np.dtype('float64')) or (
                     labelled_output[c].values.dtype == np.dtype('int64')))
             self.assertTrue((unlabelled_output[c].values.dtype == np.dtype('float64')) or (
                     unlabelled_output[c].values.dtype == np.dtype('int64')))
             self.assertTrue((unlabelled_output[c].values.dtype == np.dtype('float64')) or (
-                    all_data[c].values.dtype == np.dtype('int64')))
+                    taxa_in_all_regions[c].values.dtype == np.dtype('int64')))
 
     def test_genera_from_acc_names(self):
         self.assertEqual(get_genus_from_full_name('Danais'), 'Danais')
@@ -114,8 +105,8 @@ class Test(unittest.TestCase):
 
     def test_genera_variables_are_all_the_same(self):
 
-        for genus in all_data['Genus'].unique():
-            genus_df = all_data[all_data['Genus'] == genus]
+        for genus in taxa_in_all_regions['Genus'].unique():
+            genus_df = taxa_in_all_regions[taxa_in_all_regions['Genus'] == genus]
             for var in GENERA_VARS:
                 # These variables have some absence data specific to species
                 if var not in ['Alkaloids', 'Spines']:
@@ -131,19 +122,19 @@ class Test(unittest.TestCase):
         self.assertEqual(len(nan_habits.index), 0)
 
         # This will fail as don't have for all data, important is the assertion above
-        nan_habits = all_data[all_data['habit_sc'].isna()]
+        nan_habits = taxa_in_all_regions[taxa_in_all_regions['habit_sc'].isna()]
         nan_habits.to_csv(os.path.join(_test_output_dir, 'unknown_habits.csv'))
         pd.DataFrame(nan_habits['Genus'].unique()).to_csv(os.path.join(_test_output_dir, 'unknown_genus_habits.csv'))
         self.assertEqual(len(nan_habits.index), 0)
 
     def test_discrete_vars_are_discrete(self):
         for c in DISCRETE_VARS:
-            pd.testing.assert_series_equal(all_data[c], all_data[c].round())
+            pd.testing.assert_series_equal(taxa_in_all_regions[c], taxa_in_all_regions[c].round())
 
     def test_kg_mode_in_all(self):
-        modes = all_data['kg_mode']
-        all_kg = all_data['kg_all']
-        for idx, row in all_data.iterrows():
+        modes = taxa_in_all_regions['kg_mode']
+        all_kg = taxa_in_all_regions['kg_all']
+        for idx, row in taxa_in_all_regions.iterrows():
             print(row['kg_mode'])
             print(row['kg_all'])
             if np.isnan(row['kg_mode']):
@@ -161,14 +152,14 @@ class Test(unittest.TestCase):
 
         for var in bounds:
             print(var)
-            min = all_data[var].min()
-            max = all_data[var].max()
+            min = taxa_in_all_regions[var].min()
+            max = taxa_in_all_regions[var].max()
 
             self.assertGreaterEqual(min, bounds[var][0])
             self.assertLessEqual(max, bounds[var][1])
 
     def test_output_instances(self):
-        ad_copy = all_data.set_index(ACCEPTED_NAME_COLUMN, drop=False)
+        ad_copy = taxa_in_all_regions.set_index(ACCEPTED_NAME_COLUMN, drop=False)
         taxa_in_all_regions_copy = taxa_in_all_regions.set_index(ACCEPTED_NAME_COLUMN, drop=False)
 
         def test_dict(sp, d):
@@ -318,21 +309,18 @@ class Test(unittest.TestCase):
         def tests(df):
             self.assertEqual(len(df[(df['Emergence'] == 0) & df['Spines'] == 1].index), 0)
             self.assertEqual(len(df[(df['Emergence'] == 0) & df['Hairs'] == 1].index), 0)
-            for a in ALK_CLASS_VARS:
-                test_df = df[(df['Alkaloids'] == 0) & df[a] == 1]
-                self.assertEqual(len(test_df.index), 0, msg=test_df[['Accepted_Name', a, 'Alkaloids']])
 
             self.assertEqual(len(df[(df['Medicinal'] == 0) & df['Antimalarial_Use'] == 1].index), 0)
             if 'Steroids' in df.columns and 'Cardenolides' in df.columns:
                 self.assertEqual(len(df[(df['Steroids'] == 0) & df['Cardenolides'] == 1].index), 0)
 
-        tests(all_data)
+        tests(taxa_in_all_regions)
         tests(labelled_output)
         tests(unlabelled_output)
 
     def test_outputs(self):
 
-        self.assertEqual(len(all_data.index), len(labelled_output.index) + len(unlabelled_output.index))
+        self.assertEqual(len(taxa_in_all_regions.index), len(labelled_output.index) + len(unlabelled_output.index))
 
         def test_for_duplication(df):
             duplicateRows = df[df.duplicated([ACCEPTED_NAME_COLUMN])]
@@ -341,7 +329,7 @@ class Test(unittest.TestCase):
 
         test_for_duplication(labelled_output)
         test_for_duplication(unlabelled_output)
-        test_for_duplication(all_data)
+        test_for_duplication(taxa_in_all_regions)
 
         def test_for_all_nans(df):
             mask = ' & '.join(
@@ -352,7 +340,7 @@ class Test(unittest.TestCase):
             self.assertEqual(len(all_nan_values.index), 0,
                              msg=f'Samples with all nan values are present: {all_nan_values}')
 
-        test_for_all_nans(all_data)
+        test_for_all_nans(taxa_in_all_regions)
         test_for_all_nans(labelled_output)
 
         test_for_all_nans(taxa_in_all_regions)
@@ -368,7 +356,7 @@ class Test(unittest.TestCase):
 
         do_rank_test(labelled_output)
         do_rank_test(unlabelled_output)
-        do_rank_test(all_data)
+        do_rank_test(taxa_in_all_regions)
 
 
 if __name__ == '__main__':

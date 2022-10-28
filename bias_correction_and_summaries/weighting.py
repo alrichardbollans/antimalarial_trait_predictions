@@ -7,7 +7,7 @@ from cvxopt import matrix, solvers
 from pkg_resources import resource_filename
 from sklearn.linear_model import LogisticRegression
 
-from fixing_bias import LABELLED_TRAITS_IN_ALL_REGIONS, ALL_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import LABELLED_TRAITS_IN_ALL_REGIONS, ALL_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, \
     vars_without_target_to_use
 from import_trait_data import CONTINUOUS_VARS
 

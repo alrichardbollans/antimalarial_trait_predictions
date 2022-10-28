@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, brier_score_loss, recall_score
 from sklearn.model_selection import StratifiedKFold
 
-from fixing_bias import known_biasing_features, LABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import known_biasing_features, LABELLED_TRAITS_IN_ALL_REGIONS, \
     UNLABELLED_TRAITS_IN_ALL_REGIONS, bias_output_dir, vars_without_target_to_use
 from general_preprocessing_and_testing import output_boxplot, do_basic_preprocessing
 
