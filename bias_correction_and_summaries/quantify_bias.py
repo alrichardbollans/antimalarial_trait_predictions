@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 
-from bias_correction_and_summaries import bias_output_dir, LABELLED_TRAITS_IN_ALL_REGIONS, \
-    ALL_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import bias_output_dir, LABELLED_TRAITS, \
+    ALL_TRAITS, UNLABELLED_TRAITS, \
     vars_to_use_in_bias_analysis
 from import_trait_data import DISCRETE_VARS, \
     CONTINUOUS_VARS
@@ -13,7 +13,7 @@ quantbias_output_dir = os.path.join(bias_output_dir, 'quantifying bias')
 
 
 def quantify_given_bias():
-    df_all_regions = compare_sample_distributions(LABELLED_TRAITS_IN_ALL_REGIONS, ALL_TRAITS_IN_ALL_REGIONS,
+    df_all_regions = compare_sample_distributions(LABELLED_TRAITS, ALL_TRAITS,
                                                   output_csv=os.path.join(quantbias_output_dir, 'given_bias.csv')
                                                   )
     cont_df = df_all_regions[~df_all_regions['ks_p_value'].isna()]
@@ -30,27 +30,23 @@ def summarise_traits():
     """
     Gets summaries of different datasets
     """
-    LABELLED_TRAITS_IN_ALL_REGIONS.describe().to_csv(os.path.join(quantbias_output_dir, 'labelled trait summary.csv'))
-    UNLABELLED_TRAITS_IN_ALL_REGIONS.describe().to_csv(
+    LABELLED_TRAITS.describe().to_csv(os.path.join(quantbias_output_dir, 'labelled trait summary.csv'))
+    UNLABELLED_TRAITS.describe().to_csv(
         os.path.join(quantbias_output_dir, 'unlabelled trait summary.csv'))
-    ALL_TRAITS_IN_ALL_REGIONS.describe().to_csv(os.path.join(quantbias_output_dir, 'all trait summary.csv'))
-
-    # b_df = oversample_by_weight(LABELLED_TRAITS_IN_ALL_REGIONS, allow_data_leak=True, method='ratio')
-    # b_df.describe().to_csv(os.path.join(quantbias_output_dir, 'corrected trait summary.csv'))
+    ALL_TRAITS.describe().to_csv(os.path.join(quantbias_output_dir, 'all trait summary.csv'))
 
 
 def plot_data_means():
     discrete_traits = [c for c in vars_to_use_in_bias_analysis if c in DISCRETE_VARS]
-    plot_means_all_vs_labelled(ALL_TRAITS_IN_ALL_REGIONS, discrete_traits,
+    plot_means_all_vs_labelled(ALL_TRAITS, discrete_traits,
                                os.path.join(quantbias_output_dir, 'discrete_means.png'), minmaxscale=True)
 
     cont_traits = [c for c in vars_to_use_in_bias_analysis if c in CONTINUOUS_VARS]
-    plot_means_all_vs_labelled(ALL_TRAITS_IN_ALL_REGIONS, cont_traits,
+    plot_means_all_vs_labelled(ALL_TRAITS, cont_traits,
                                os.path.join(quantbias_output_dir, 'cont_means.png'), minmaxscale=True)
 
     print('non numeric traits in bias analysis:')
     print([x for x in vars_to_use_in_bias_analysis if x not in discrete_traits and x not in cont_traits])
-
 
 def main():
     quantify_given_bias()

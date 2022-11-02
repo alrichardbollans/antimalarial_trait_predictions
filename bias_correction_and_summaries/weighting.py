@@ -7,11 +7,12 @@ from cvxopt import matrix, solvers
 from pkg_resources import resource_filename
 from sklearn.linear_model import LogisticRegression
 
-from bias_correction_and_summaries import LABELLED_TRAITS_IN_ALL_REGIONS, ALL_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS, \
+from bias_correction_and_summaries import LABELLED_TRAITS, ALL_TRAITS, UNLABELLED_TRAITS, \
     vars_without_target_to_use
 from import_trait_data import CONTINUOUS_VARS
 
 bias_output_dir = resource_filename(__name__, 'outputs')
+_temp_output_dir = resource_filename(__name__, 'temp_outputs')
 
 # num_features = [x for x in NUMERIC_TRAITS if x in vars_without_target_to_use] + ['Family']
 
@@ -162,7 +163,7 @@ def logit_correction(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, se
         print('Warning: repeated elements in sample and underlying pop. for Logit correction')
         print('Copies appearing in sample should be removed from underlying pop.')
         print(dup_df1)
-        dup_df1.to_csv(os.path.join('temp_outputs', 'logit_dups.csv'))
+        dup_df1.to_csv(os.path.join(_temp_output_dir, 'logit_dups.csv'))
 
     selected['selected'] = 1
     population_copy['selected'] = 0
@@ -213,9 +214,7 @@ def append_weight_column(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame
     :param allow_data_leak:
     :return:
     """
-    # trait_df.set_index('Accepted_Name', inplace=True)
-    # original_copy = trait_df.copy(deep=True)
-    # trait_df = trait_df[selection_vars]
+
     print(f'Selection vars for bias correction: {selection_vars}')
     if method == 'ratio':
         out = ratio_correction(trait_df, underlying_pop_df, selection_vars)
@@ -229,7 +228,7 @@ def append_weight_column(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame
     assert 'weight' not in trait_df.columns
     assert 'weight' not in underlying_pop_df.columns
 
-    # out = normalise_weight_column(out)
+
     return out
 
 
@@ -258,13 +257,9 @@ def oversample_by_weight(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame
 
 
 def main():
-    logit_correction(LABELLED_TRAITS_IN_ALL_REGIONS, UNLABELLED_TRAITS_IN_ALL_REGIONS,
+    logit_correction(LABELLED_TRAITS, UNLABELLED_TRAITS,
                      known_biasing_features, to_target_encode).to_csv(
         os.path.join(bias_output_dir, 'weigthed_data_logit.csv'))
-
-    # append_weight_column(LABELLED_TRAITS_IN_ALL_REGIONS, ALL_TRAITS_IN_ALL_REGIONS, 'ratio',
-    #                      known_biasing_features).to_csv(
-    #     os.path.join(bias_output_dir, 'weigthed_data_ratio.csv'))
 
 
 if __name__ == '__main__':

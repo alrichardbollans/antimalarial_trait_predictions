@@ -54,9 +54,9 @@ TRAIT_CSV_WITH_EXTRA_TAXA = os.path.join(IMPORT_TEMP_OUTPUT_DIR, "traits_with_ex
 
 IMPORT_OUTPUT_DIR = resource_filename(__name__, "outputs")
 
-# Outputs not restricted by malarial regions
-IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION = os.path.join(IMPORT_OUTPUT_DIR, 'not restricted by region')
-TAXA_IN_ALL_REGIONS_CSV = os.path.join(IMPORT_OUTPUT_DIR_NOT_RESTRICTED_BY_REGION, "all_traits.csv")
+IMPORTED_TRAIT_CSV = os.path.join(IMPORT_OUTPUT_DIR, "all_traits.csv")
+IMPORTED_LABELLED_TRAIT_CSV = os.path.join(IMPORT_OUTPUT_DIR, "labelled_traits.csv")
+IMPORTED_UNLABELLED_TRAIT_CSV = os.path.join(IMPORT_OUTPUT_DIR, "unlabelled_traits.csv")
 
 FAMILIES_OF_INTEREST = [
     "Apocynaceae",
@@ -80,7 +80,7 @@ HABIT_COLS = ["habit_hb",
               "habit_subsh",
               "habit_tr"]
 
-COMPOUND_PRESENCE_VARS = ["AntiBac_Metabolites", "Alkaloids", "Cardenolides",
+COMPOUND_PRESENCE_VARS = ["Alkaloids", "Cardenolides",
                           "Steroids"]
 
 GENERA_VARS = ["Richness", "Spines",
@@ -101,7 +101,7 @@ CONTINUOUS_VARS = ['Richness'] + [c for c in ENVIRON_VARS if (c not in DISCRETE_
 
 NUMERIC_TRAITS = DISCRETE_VARS + CONTINUOUS_VARS
 TRAITS = NUMERIC_TRAITS + NON_NUMERIC_TRAITS
-
+TRAITS_TO_DROP_AFTER_IMPORT = ["Spines", "Hairs"]
 # Traits not to fill with 0s
 TRAITS_WITH_NANS = HABIT_COLS + ENVIRON_VARS + COMPOUND_PRESENCE_VARS
 # [

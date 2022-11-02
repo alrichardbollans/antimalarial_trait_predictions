@@ -23,7 +23,7 @@ def compare_samples_discrete_vars(df1: pd.DataFrame, df2: pd.DataFrame, vars_to_
 
     for c in features:
         if c in df1.columns and c in df2.columns:
-            if c in DISCRETE_VARS + [TARGET_COLUMN]:
+            if c in BINARY_VARS + [TARGET_COLUMN]:
                 positive_in_1 = len(df1[df1[c] == 1][c].values)
                 negative_in_1 = len(df1[df1[c] == 0][c].values)
 

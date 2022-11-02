@@ -1,7 +1,8 @@
 import pandas as pd
 
 from import_trait_data import ACCEPTED_NAME_COLUMN, TARGET_COLUMN, COLUMNS_TO_DROP, NAME_COLUMNS, TEMP_ALL_TRAITS_CSV, \
-    TRAITS_WITHOUT_NANS, GENERA_VARS, TRAITS, TAXONOMIC_VARS, TAXA_IN_ALL_REGIONS_CSV
+    TRAITS_WITHOUT_NANS, GENERA_VARS, TRAITS, TAXONOMIC_VARS, IMPORTED_TRAIT_CSV, \
+    TRAITS_TO_DROP_AFTER_IMPORT, IMPORTED_LABELLED_TRAIT_CSV, IMPORTED_UNLABELLED_TRAIT_CSV
 
 
 def remove_samples_with_no_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -33,15 +34,18 @@ def fill_in_genera_vars(in_df: pd.DataFrame):
     :return:
     """
     for var in GENERA_VARS:
-        genera_hits = in_df[in_df[var] == 1]['Genus'].dropna().unique()
-        onemask = in_df[var].isna() & in_df['Genus'].isin(genera_hits)
-        onemask_df = in_df[onemask]
-        in_df.loc[onemask, var] = 1
+        if var in in_df.columns:
+            genera_hits = in_df[in_df[var] == 1]['Genus'].dropna().unique()
+            onemask = in_df[var].isna() & in_df['Genus'].isin(genera_hits)
+            onemask_df = in_df[onemask]
+            in_df.loc[onemask, var] = 1
 
-        genera_zeros = in_df[in_df[var] == 0]['Genus'].dropna().unique()
-        zeromask = in_df[var].isna() & in_df['Genus'].isin(genera_zeros)
-        zeromaskmask_df = in_df[zeromask]
-        in_df.loc[zeromask, var] = 0
+            genera_zeros = in_df[in_df[var] == 0]['Genus'].dropna().unique()
+            zeromask = in_df[var].isna() & in_df['Genus'].isin(genera_zeros)
+            zeromaskmask_df = in_df[zeromask]
+            in_df.loc[zeromask, var] = 0
+        else:
+            print(f'Warning: {var} specified in variables but not in Dataframe')
 
 
 def fill_in_rubiaceae_latex(in_df: pd.DataFrame):
@@ -73,9 +77,9 @@ def standardise_output(df: pd.DataFrame, out_csv: str = None):
     replace_nans_with_zeros(df)
 
     df = df[NAME_COLUMNS +
-            [c for c in df if (c not in [TARGET_COLUMN] and c not in NAME_COLUMNS)]
+            [c for c in df if
+             (c not in [TARGET_COLUMN] and c not in NAME_COLUMNS and c not in TRAITS_TO_DROP_AFTER_IMPORT)]
             + [TARGET_COLUMN]]
-    df.set_index(ACCEPTED_NAME_COLUMN)
     if out_csv is not None:
         df.to_csv(out_csv)
 
@@ -98,17 +102,17 @@ def main():
         dtype={'Family': "str"})
     x = trait_df.copy(deep=True)
     fill_in_genera_vars(trait_df)
-    # fill_in_rubiaceae_latex(trait_df)
     if len(x.compare(trait_df).index) > 0:
         print(x.compare(trait_df))
         print(
             'Variables should only appear in this comparison when they have been given in the trait table at species level but updated at genera level')
 
-    # Remove taxa not in malarial regions
-
-    taxa_in_all_regions = trait_df.copy(deep=True)
-    taxa_in_all_regions = standardise_output(taxa_in_all_regions)
-    taxa_in_all_regions.to_csv(TAXA_IN_ALL_REGIONS_CSV)
+    all_taxa = trait_df.copy(deep=True)
+    all_taxa = standardise_output(all_taxa, IMPORTED_TRAIT_CSV)
+    labelled_taxa = all_taxa[~(all_taxa[TARGET_COLUMN].isna())]
+    labelled_taxa.to_csv(IMPORTED_LABELLED_TRAIT_CSV)
+    unlabelled_taxa = all_taxa[all_taxa[TARGET_COLUMN].isna()]
+    unlabelled_taxa.to_csv(IMPORTED_UNLABELLED_TRAIT_CSV)
 
 
 if __name__ == '__main__':

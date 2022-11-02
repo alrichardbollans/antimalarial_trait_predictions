@@ -127,7 +127,7 @@ def plot_means_all_vs_labelled(all_traits: pd.DataFrame, features_to_plot: List[
 
     all_traits = all_traits[features_to_plot]
     labelled_traits = labelled_traits[features_to_plot]
-    ylabel= 'Mean'
+    ylabel = 'Mean'
     if minmaxscale:
         ylabel = 'Scaled Mean'
         # scale_features

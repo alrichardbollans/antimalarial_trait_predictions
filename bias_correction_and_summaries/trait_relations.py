@@ -7,7 +7,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from pkg_resources import resource_filename
 
-from bias_correction_and_summaries import vars_to_use_in_bias_analysis, ALL_TRAITS_IN_ALL_REGIONS
+from bias_correction_and_summaries import vars_to_use_in_bias_analysis, ALL_TRAITS
 from import_trait_data import TARGET_COLUMN, BINARY_VARS, HABIT_COLS
 
 _output_path = resource_filename(__name__, 'outputs')
@@ -58,10 +58,6 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
     plt.rc('font', size=15)  # controls default text size
 
     result = cooccur_df.pivot(index='Var2', columns='Var1', values='Values')
-    # mask
-    # mask = np.triu(np.ones_like(result, dtype=bool))  # adjust mask and df
-    # mask = mask[1:, :-1]
-    # corr = result.iloc[1:, :-1].copy()
 
     # Set up the matplotlib figure
     f, ax = plt.subplots(figsize=(11, 9))
@@ -78,8 +74,7 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
     )
     plt.xlabel('')
     plt.ylabel('')
-    # plt.title('Preposition Co-occurrence Matrix',size=20)
-    # yticks
+
     plt.yticks(rotation=0)
 
     f.tight_layout()
@@ -88,7 +83,7 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
 
 def main():
     bin_traits = [c for c in vars_to_use_in_bias_analysis if c in BINARY_VARS and c not in HABIT_COLS]
-    co_occ_df = make_cooccur_df(ALL_TRAITS_IN_ALL_REGIONS, bin_traits + [TARGET_COLUMN])
+    co_occ_df = make_cooccur_df(ALL_TRAITS, bin_traits + [TARGET_COLUMN])
     make_heatmap(co_occ_df, os.path.join(_comparison_output_dir, 'bin_heatmap.png'))
 
 

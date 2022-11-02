@@ -6,9 +6,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, brier_score_loss, recall_score
 from sklearn.model_selection import StratifiedKFold
 
-from bias_correction_and_summaries import known_biasing_features, LABELLED_TRAITS_IN_ALL_REGIONS, \
-    UNLABELLED_TRAITS_IN_ALL_REGIONS, bias_output_dir, vars_without_target_to_use
+from bias_correction_and_summaries import known_biasing_features, LABELLED_TRAITS, \
+    UNLABELLED_TRAITS, bias_output_dir, vars_without_target_to_use
 from general_preprocessing_and_testing import output_boxplot, do_basic_preprocessing
+from import_trait_data import TRAITS_WITH_NANS
 
 _inputs_path = resource_filename(__name__, 'inputs')
 
@@ -23,9 +24,9 @@ if not os.path.isdir(_output_path):
     os.mkdir(_output_path)
 
 
-def logit_test():
-    labelled_data = LABELLED_TRAITS_IN_ALL_REGIONS.copy(deep=True)
-    unlabelled_data = UNLABELLED_TRAITS_IN_ALL_REGIONS.copy(deep=True)
+def main():
+    labelled_data = LABELLED_TRAITS.copy(deep=True)
+    unlabelled_data = UNLABELLED_TRAITS.copy(deep=True)
     labelled_data['selected'] = 1
     unlabelled_data['selected'] = 0
 
@@ -36,13 +37,13 @@ def logit_test():
 
     logit_accs = []
     logit_briers = []
-    logit_recalls= []
+    logit_recalls = []
 
-    # if any(x in TRAITS_WITH_NANS for x in known_biasing_features):
-    #     # In the following we won't impute, if there are traits with nans we need to change this
-    #     raise ValueError
+    if any(x in TRAITS_WITH_NANS for x in known_biasing_features):
+        # In the following we won't impute, if there are traits with nans we need to change this
+        raise ValueError
 
-    for i in range(2):
+    for i in range(10):
         kf = StratifiedKFold(n_splits=10, shuffle=True)
         for train_index, test_index in kf.split(X, y):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
@@ -57,7 +58,7 @@ def logit_test():
                                            'Genus',
                                            'kg_mode'],
                                        impute=False,
-                                       scale=True)
+                                       scale=False)
 
             logit = LogisticRegression()
 
@@ -70,8 +71,6 @@ def logit_test():
             logit_prob_estimates = logit.predict_proba(processed_X_test[known_biasing_features])[:, 1]
 
             logit_briers.append(brier_score_loss(y_test, logit_prob_estimates, pos_label=1))
-
-
 
             import os
             acc_dict = {}

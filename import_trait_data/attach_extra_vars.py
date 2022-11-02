@@ -391,9 +391,7 @@ def main():
                    [rub_apoc_cardenolide_hits_output_csv, logan_cardenolide_hits_output_csv], level='species')
     update_hit_var(updated_trait_df, 'Steroids', [rub_apoc_steroid_hits_output_csv, logan_steroid_hits_output_csv],
                    level='species')
-    attach_new_var(updated_trait_df, 'AntiBac_Metabolites',
-                   [rub_apoc_antibac_metabolite_hits_output_csv, logan_antibac_metabolite_hits_output_csv],
-                   level='species')
+
     # Poison data covers all families
     attach_new_var_hits_absences(updated_trait_df, 'Poisonous', [output_poison_csv],
                                  [output_nonpoison_csv], level='species')
