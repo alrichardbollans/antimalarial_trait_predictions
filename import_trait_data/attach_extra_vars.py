@@ -279,10 +279,6 @@ def merge_new_var_from_data(in_df: pd.DataFrame, var_name: str, var_csvs: List[s
 def modify_related_features(df: pd.DataFrame):
     df['Emergence'] = df[["Spines", "Hairs"]].max(axis=1)
     df['Medicinal'] = df[["Medicinal", "Antimalarial_Use", "History_Fever"]].max(axis=1)
-    df['Steroids'] = df[["Steroids", "Cardenolides"]].max(axis=1)
-    # df['Alkaloids_genus'] = df[["Alkaloids_genus", "Alkaloids_species"]].max(axis=1)
-    # if 'Steroids' in df.columns:
-    #     raise ValueError
 
 
 def reset_dtypes(df: pd.DataFrame) -> pd.DataFrame:
@@ -386,11 +382,6 @@ def main():
     updated_trait_df = merge_new_vars_from_data(updated_trait_df, ENVIRON_VARS,
                                                 [compiled_climate_vars_csv, logan_compiled_climate_vars_csv],
                                                 level='species')
-
-    update_hit_var(updated_trait_df, 'Cardenolides',
-                   [rub_apoc_cardenolide_hits_output_csv, logan_cardenolide_hits_output_csv], level='species')
-    update_hit_var(updated_trait_df, 'Steroids', [rub_apoc_steroid_hits_output_csv, logan_steroid_hits_output_csv],
-                   level='species')
 
     # Poison data covers all families
     attach_new_var_hits_absences(updated_trait_df, 'Poisonous', [output_poison_csv],

@@ -1,7 +1,7 @@
 import os
+from pkg_resources import resource_filename
 
 from climate_vars import all_climate_names
-from pkg_resources import resource_filename
 
 NAME_COLUMNS = [
     "Accepted_Name",
@@ -16,12 +16,15 @@ NAME_COLUMNS = [
 COLUMNS_TO_DROP = [
     "Ref_Alks",
     "Alkaloids_test_notes",
+    "Alk_classes_tested_for",
     'Alkaloid_classes',
     'Alkaloid_class_absences',
     'Extraction_Method',
     'Type_of_Test',
+    "Cardenolides",
     'Cardenolides_details',
     'Cardenolides_Ref',
+    "Steroids",
     'Steroids_details',
     'Steroids_Ref',
     'General_Phytochem_notes',
@@ -69,9 +72,6 @@ TAXONOMIC_VARS = ['Richness']
 ENVIRON_VARS = all_climate_names
 
 SOIL_VARS = [c for c in ENVIRON_VARS if 'soil' in c] + ['soil_water_cap']
-# OHE Columns we will get. Note no examples with kg = 3
-# KG_COLS = ['kg2_' + str(x + 1) for x in range(31) if x != 2]
-# ENVIRON_VARS = INITIAL_CLIMATE_VARS + KG_COLS
 
 HABIT_COLS = ["habit_hb",
               "habit_li",
@@ -80,8 +80,7 @@ HABIT_COLS = ["habit_hb",
               "habit_subsh",
               "habit_tr"]
 
-COMPOUND_PRESENCE_VARS = ["Alkaloids", "Cardenolides",
-                          "Steroids"]
+COMPOUND_PRESENCE_VARS = ["Alkaloids"]
 
 GENERA_VARS = ["Richness", "Spines",
                "Emergence",
@@ -92,7 +91,7 @@ MORPH_VARS = ["Spines",
               "Hairs"] + HABIT_COLS
 
 BINARY_VARS = ["In_Malarial_Region", "Common_Name", "Poisonous", "Medicinal", "Wiki_Page",
-               "Antimalarial_Use", "Spines", "Hairs", "Emergence",
+               "Antimalarial_Use", "Emergence",
                'Tested_for_Alkaloids'] + HABIT_COLS + COMPOUND_PRESENCE_VARS
 
 DISCRETE_VARS = BINARY_VARS
