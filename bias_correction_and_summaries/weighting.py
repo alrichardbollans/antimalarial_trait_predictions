@@ -3,6 +3,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+import xgboost.dask
 from cvxopt import matrix, solvers
 from pkg_resources import resource_filename
 from sklearn.linear_model import LogisticRegression
@@ -155,7 +156,7 @@ def ratio_correction(trait_df, underlying_pop_df, selection_vars, max_weight=Non
 def logit_correction(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, selection_vars: List[str],
                      cols_to_target_encode: List[str]) -> pd.DataFrame:
     selected = trait_df.copy(deep=True)
-    population_copy = underlying_pop_df.copy(deep=True)
+    population_copy = underlying_pop_df.copy(deep=True)[selection_vars]
 
     all_data = pd.concat([selected, population_copy])
     dup_df1 = all_data[all_data.duplicated()]
@@ -200,6 +201,7 @@ def logit_correction(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, se
     selected['weight'] = prob_estimates
     selected['weight'] = 1 / selected['weight']
     selected.drop(columns=['selected'], inplace=True)
+    pd.testing.assert_index_equal(selected.index, trait_df.index)
     return selected
 
 
@@ -227,7 +229,6 @@ def append_weight_column(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame
 
     assert 'weight' not in trait_df.columns
     assert 'weight' not in underlying_pop_df.columns
-
 
     return out
 

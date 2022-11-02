@@ -48,7 +48,7 @@ def main():
         for train_index, test_index in kf.split(X, y):
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
-            processed_X_train, processed_X_test, processed_unlabelled, cols_with_good_variance = \
+            processed_X_train, processed_X_test, processed_unlabelled = \
                 do_basic_preprocessing(X, y,
                                        train_index,
                                        test_index,
@@ -104,4 +104,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logit_test()
+    main()
