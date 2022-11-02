@@ -32,11 +32,7 @@ def get_semi_supervised_data(X_train: pd.DataFrame, y_train: pd.DataFrame, unlab
     :param unlabelled_data_to_use:
     :return:
     """
-    # if unlabelled_data_to_use is None:
-    #     cols_to_use = [x for x in all_traits_to_use if x in X_train.columns]
-    #     unlabelled_data = unlabelled_to_use[cols_to_use]
-    #     unlabelled_data = unlabelled_data.dropna(axis=0)
-    # else:
+
     unlabelled_data = unlabelled_data_to_use
 
     all_data = pd.concat([X_train, unlabelled_data])
@@ -92,7 +88,6 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_i
     # Target encode categorical features
     # Defaults to mean when transforming unknown values
     if categorical_features is not None:
-        # cat_features_to_encode = [c for c in categorical_features if c in X.columns]
         target_encoder = ce.TargetEncoder(cols=categorical_features)
         target_encoder.fit(X_train, y_train)
         encoded_X_train = target_encoder.transform(X_train)
@@ -142,7 +137,6 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_i
         variance_X_train = encoded_X_train
         variance_X_test = encoded_X_test
         variance_unlabelled = encoded_unlabelled
-        cols_with_good_variance = X.columns.tolist()
 
     # Impute missing data values
     if impute:
@@ -177,10 +171,10 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_i
         all_selected_data = pd.concat([imputed_X_train, imputed_unlabelled])
         standard_scaler.fit(all_selected_data)
         X_train_scaled = pd.DataFrame(standard_scaler.transform(imputed_X_train),
-                                      index = imputed_X_train.index,
+                                      index=imputed_X_train.index,
                                       columns=standard_scaler.get_feature_names_out())
         X_test_scaled = pd.DataFrame(standard_scaler.transform(imputed_X_test),
-                                     index = imputed_X_test.index,
+                                     index=imputed_X_test.index,
                                      columns=standard_scaler.get_feature_names_out())
 
         if unlabelled_data is not None:
@@ -194,10 +188,10 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_i
         pd.testing.assert_index_equal(X_test.index, X_test_scaled.index)
         if unlabelled_data is not None:
             pd.testing.assert_index_equal(unlabelled_data.index, unlabelled_scaled.index)
-        return X_train_scaled, X_test_scaled, unlabelled_scaled, cols_with_good_variance
+        return X_train_scaled, X_test_scaled, unlabelled_scaled
     else:
         pd.testing.assert_index_equal(X_train.index, imputed_X_train.index)
         pd.testing.assert_index_equal(X_test.index, imputed_X_test.index)
         if unlabelled_data is not None:
             pd.testing.assert_index_equal(unlabelled_data.index, imputed_unlabelled.index)
-        return imputed_X_train, imputed_X_test, imputed_unlabelled, cols_with_good_variance
+        return imputed_X_train, imputed_X_test, imputed_unlabelled

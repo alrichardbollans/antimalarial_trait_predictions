@@ -3,13 +3,11 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-import xgboost.dask
 from cvxopt import matrix, solvers
 from pkg_resources import resource_filename
 from sklearn.linear_model import LogisticRegression
 
-from bias_correction_and_summaries import LABELLED_TRAITS, ALL_TRAITS, UNLABELLED_TRAITS, \
-    vars_without_target_to_use
+from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS
 from import_trait_data import CONTINUOUS_VARS
 
 bias_output_dir = resource_filename(__name__, 'outputs')
