@@ -73,12 +73,12 @@ ENVIRON_VARS = all_climate_names
 
 SOIL_VARS = [c for c in ENVIRON_VARS if 'soil' in c] + ['soil_water_cap']
 
-HABIT_COLS = ["habit_hb",
-              "habit_li",
-              "habit_sc",
-              "habit_sh",
-              "habit_subsh",
-              "habit_tr"]
+HABIT_COLS = ["herb",
+              "liana",
+              "succulent",
+              "shrub",
+              "subshrub",
+              "tree"]
 
 COMPOUND_PRESENCE_VARS = ["Alkaloids"]
 

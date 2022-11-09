@@ -115,14 +115,14 @@ class Test(unittest.TestCase):
                     self.assertEqual(len(genus_df[var].unique().tolist()), 1)
 
     def test_habit_presence(self):
-        nan_habits = labelled_output[labelled_output['habit_sc'].isna()]
+        nan_habits = labelled_output[labelled_output['succulent'].isna()]
         nan_habits.to_csv(os.path.join(_test_output_dir, 'unknown_labelled_habits.csv'))
         pd.DataFrame(nan_habits['Genus'].unique()).to_csv(
             os.path.join(_test_output_dir, 'unknown_labelled_genus_habits.csv'))
         self.assertEqual(len(nan_habits.index), 0)
 
         # This will fail as don't have for all data, important is the assertion above
-        nan_habits = taxa_in_all_regions[taxa_in_all_regions['habit_sc'].isna()]
+        nan_habits = taxa_in_all_regions[taxa_in_all_regions['succulent'].isna()]
         nan_habits.to_csv(os.path.join(_test_output_dir, 'unknown_habits.csv'))
         pd.DataFrame(nan_habits['Genus'].unique()).to_csv(os.path.join(_test_output_dir, 'unknown_genus_habits.csv'))
         self.assertEqual(len(nan_habits.index), 0)
@@ -169,7 +169,6 @@ class Test(unittest.TestCase):
                 # OHEd variables
                 if trait == 'habit':
                     if trait == 'habit':
-                        tag = 'habit_'
                         cols = HABIT_COLS
                     # elif trait == 'kg_all':
                     #     cols = KG_COLS
@@ -181,7 +180,7 @@ class Test(unittest.TestCase):
                     for h in cols:
                         value = ad_copy.at[sp, h]
                         value2 = taxa_in_all_regions_copy.at[sp, h]
-                        if any(tag + gh == h for gh in given_habits):
+                        if any(gh == h for gh in given_habits):
                             self.assertEqual(1, value, msg=f'{sp}:{h}:{given_habits}')
                             self.assertEqual(1, value2, msg=f'{sp}:{h}:{given_habits}')
                         else:
@@ -222,7 +221,7 @@ class Test(unittest.TestCase):
 
         aspi_dict = {TARGET_COLUMN: 1, 'Genus': 'Aspidosperma', 'Medicinal': 1, 'Poisonous': 1,
                      'Alkaloids': 1, 'Antimalarial_Use': 1, 'AntiBac_Metabolites': np.nan,
-                     'Family': 'Apocynaceae', 'Spines': 0, 'Coloured_Latex': 1, 'Left_Corolla': 1, 'habit': 'tr',
+                     'Family': 'Apocynaceae', 'Spines': 0, 'Coloured_Latex': 1, 'Left_Corolla': 1, 'habit': 'tree',
                      'Richness': 0.047648136835675, 'Steroids': np.nan, 'Cardenolides': np.nan,
                      'native_tdwg3_codes': "['BOL', 'BZE', 'BZL', 'BZC', 'CLM', 'GUY', 'PER', 'SUR', 'VEN', 'VNA']",
                      'alk_mia': 1, 'alk_indole': 1, 'alk_pyrrole': 0}
@@ -235,7 +234,7 @@ class Test(unittest.TestCase):
 
         vomica_dict = {TARGET_COLUMN: 0, 'Genus': 'Strychnos', 'Medicinal': 1, 'Poisonous': 1,
                        'Alkaloids': 1, 'Antimalarial_Use': 1, 'AntiBac_Metabolites': np.nan,
-                       'Family': 'Loganiaceae', 'Spines': 1, 'habit': 'li',
+                       'Family': 'Loganiaceae', 'Spines': 1, 'habit': 'liana',
                        'Richness': 0.1246182040317654, 'Steroids': 1, 'Cardenolides': np.nan,
                        'native_tdwg3_codes': "['BAN', 'CBD', 'IND', 'LAO', 'MLY', 'MYA', 'SRL', 'THA', 'VIE']"}
         test_dict('Strychnos nux-vomica', vomica_dict)
@@ -245,23 +244,23 @@ class Test(unittest.TestCase):
                      'Family': 'Rubiaceae', 'Accepted_ID': '744422-1', 'Accepted_Rank': 'Species',
                      'Accepted_Species': 'Bertiera borbonica', 'Wiki_Page': 1, 'Alkaloids': np.nan, 'Spines': np.nan,
                      'Coloured_Latex': 0, 'Left_Corolla': np.nan,
-                     'AntiBac_Metabolites': np.nan, 'habit': 'sh/tr', 'Richness': 0.0348197923029932,
+                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree', 'Richness': 0.0348197923029932,
                      'native_tdwg3_codes': "['REU']"}
         test_dict('Bertiera borbonica', bert_dict)
 
-        crypt_dict = {'habit': 'sh/li', 'native_tdwg3_codes': "['KEN', 'MOZ', 'TAN', 'ZAM', 'ZAI', 'ZIM']"}
+        crypt_dict = {'habit': 'shrub/liana', 'native_tdwg3_codes': "['KEN', 'MOZ', 'TAN', 'ZAM', 'ZAI', 'ZIM']"}
         test_dict('Cryptolepis apiculata', crypt_dict)
 
         arac_dict = {'Genus': 'Arachnothryx', 'Alkaloids': 0, 'Medicinal': 0, 'Poisonous': np.nan,
                      'Antimalarial_Use': 0, 'Family': 'Rubiaceae', TARGET_COLUMN: np.nan,
                      'Spines': np.nan, 'Coloured_Latex': 0, 'Left_Corolla': np.nan,
-                     'AntiBac_Metabolites': np.nan, 'habit': 'sh/tr', 'Richness': 0.0641417226634086}
+                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree', 'Richness': 0.0641417226634086}
         test_dict('Arachnothryx chiriquiana', arac_dict)
 
         cara_dict = {'Genus': 'Carapichea', 'Alkaloids': 1, 'Medicinal': 0, 'Poisonous': 0,
                      'Antimalarial_Use': 0, 'Family': 'Rubiaceae', TARGET_COLUMN: 1, 'Spines': np.nan,
                      'Coloured_Latex': 0, 'Left_Corolla': np.nan,
-                     'AntiBac_Metabolites': np.nan, 'habit': 'sh/tr/subsh', 'Richness': 0.0146609651802076}
+                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree/subshrub', 'Richness': 0.0146609651802076}
         test_dict('Carapichea affinis', cara_dict)
 
         hima_dict = {'Genus': 'Himatanthus', 'Medicinal': 1, 'Poisonous': 0,
@@ -269,7 +268,7 @@ class Test(unittest.TestCase):
                      'Family': 'Apocynaceae', 'Accepted_ID': '77136056-1', 'Accepted_Rank': 'Species',
                      'Accepted_Species': 'Himatanthus revolutus', 'Wiki_Page': 1, 'Spines': 0, 'Coloured_Latex': 0,
                      'Left_Corolla': 1, TARGET_COLUMN: np.nan, 'Alkaloids': np.nan, 'AntiBac_Metabolites': np.nan,
-                     'habit': 'sh', 'kg_all': "[1, 2, 3]"}
+                     'habit': 'shrub', 'kg_all': "[1, 2, 3]"}
         test_dict('Himatanthus revolutus', hima_dict)
 
         mor_dict = {ACCEPTED_NAME_COLUMN: 'Morinda citrifolia', TARGET_COLUMN: 0, 'AntiBac_Metabolites': 1,
@@ -293,17 +292,17 @@ class Test(unittest.TestCase):
         test_dict('Morinda chrysorhiza', mor_chry_dict)
 
         pent_dict = {ACCEPTED_NAME_COLUMN: 'Pentagonia gymnopoda',
-                     'habit': 'sh/tr', 'soil_ph': 53.4791679382324, 'kg_all': "[2]",
+                     'habit': 'shrub/tree', 'soil_ph': 53.4791679382324, 'kg_all': "[2]",
                      'kg_mode': 2}
 
         test_dict('Pentagonia gymnopoda', pent_dict)
 
         carismac_dict = {'Genus': 'Carissa', 'Accepted_Species': 'Carissa macrocarpa', 'Alkaloids': 0,
-                         'habit': 'sh'}
+                         'habit': 'shrub'}
         test_dict('Carissa macrocarpa', carismac_dict)
 
         cariscar_dict = {'Genus': 'Carissa', 'Accepted_Species': 'Carissa carandas', 'Alkaloids': 1,
-                         'habit': 'sh'}
+                         'habit': 'shrub'}
         test_dict('Carissa carandas', cariscar_dict)
 
     def test_related_features(self):

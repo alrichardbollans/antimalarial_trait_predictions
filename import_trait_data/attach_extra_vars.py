@@ -108,20 +108,16 @@ def encode_habits(df: pd.DataFrame) -> pd.DataFrame:
 
     df['Habit'] = df['Habit'].apply(convert_habits_to_lists)
 
-    # mlb = MultiLabelBinarizer()
-    # multi_labels = pd.DataFrame(mlb.fit_transform(df.pop('Habit')),
-    #              columns=['habit_' + x for x in mlb.classes_])
-    # df = df.join(multi_labels)
+
     multilabels = df.Habit.str.join('|').str.get_dummies()
-    multilabels = multilabels.add_prefix('habit_')
     df = df.join(multilabels)
     df.drop(columns=['Habit'], inplace=True)
     # Where habit is unknown, set all ohencoded columns to nan
-    new_habit_cols = [h for h in df.columns.tolist() if 'habit_' in h]
+    new_habit_cols = ['herb', 'liana', 'succulent', 'shrub', 'subshrub', 'tree']
     for h in new_habit_cols:
-        if h != 'habit_unknown':
-            df.loc[df['habit_unknown'] == 1, h] = np.nan
-    df.drop(columns=['habit_unknown'], inplace=True)
+        if h != 'unknown':
+            df.loc[df['unknown'] == 1, h] = np.nan
+    df.drop(columns=['unknown'], inplace=True)
     return df
 
 
@@ -229,14 +225,11 @@ def merge_new_var_from_data(in_df: pd.DataFrame, var_name: str, var_csvs: List[s
             print(duplicates_to_keep)
             raise ValueError(f'variable with unresolved duplicates: {var_name}')
 
-    print(f'Merging: {var_name}')
-
-    print('precise merging')
     # First match precisely
     var_accepted_names = var_df[[COL_NAMES['acc_name'], var_name]].dropna(subset=[COL_NAMES['acc_name'], var_name])
     updated_df = pd.merge(in_df, var_accepted_names, how='left', on=COL_NAMES['acc_name'])
     if level != 'precise':
-        print('species merging')
+
         # Match by species
         species_values = pd.merge(updated_df.drop(columns=[var_name]), var_accepted_names, how='left',
                                   left_on=COL_NAMES['acc_species'], right_on=COL_NAMES['acc_name'])
@@ -256,7 +249,7 @@ def merge_new_var_from_data(in_df: pd.DataFrame, var_name: str, var_csvs: List[s
             if len(sp_values) > 0:
                 updated_df[var_name].fillna(sp_values[var_name], inplace=True)
     if level == 'genera':
-        print('genera merging')
+
         if 'Genus' not in var_df.columns:
             if original_name_col is None:
                 var_df['Genus'] = var_df[COL_NAMES['acc_name']].apply(get_genus_from_full_name)
