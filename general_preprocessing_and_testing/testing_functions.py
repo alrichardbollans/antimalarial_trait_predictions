@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score, precision_score, f1_score, fbeta_score, precision_recall_curve, \
-    average_precision_score
+    average_precision_score, recall_score
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
 
@@ -39,6 +39,7 @@ class FeatureModel:
         self.feature_list = feature_list
         self.accuracies = []
         self.precisions = []
+        self.recalls = []
         self.fones = []
         self.fbetas = []
 
@@ -48,12 +49,14 @@ class FeatureModel:
             self.accuracies.append(accuracy_score(y_test, y_pred))
             self.precisions.append(
                 precision_score(y_test, y_pred))
+            self.recalls.append(recall_score(y_test, y_pred))
             self.fones.append(f1_score(y_test, y_pred))
             self.fbetas.append(fbeta_score(y_test, y_pred, beta=beta))
         else:
             self.accuracies.append(accuracy_score(y_test, y_pred, sample_weight=test_weights))
             self.precisions.append(
                 precision_score(y_test, y_pred, sample_weight=test_weights))
+            self.recalls.append(recall_score(y_test, y_pred, sample_weight=test_weights))
             self.fones.append(f1_score(y_test, y_pred, sample_weight=test_weights))
             self.fbetas.append(fbeta_score(y_test, y_pred, sample_weight=test_weights, beta=beta))
 
@@ -77,6 +80,7 @@ class clf_scores:
         self.predict_probas = []
         self.test_weights = []
         self.precisions = []
+        self.recalls = []
         self.fones = []
         self.fbetas = []
         self.init_kwargs = init_kwargs
@@ -125,6 +129,7 @@ class clf_scores:
             self.precisions.append(
                 precision_score(y_test, y_pred))
             self.fones.append(f1_score(y_test, y_pred))
+            self.recalls.append(recall_score(y_test, y_pred))
             self.fbetas.append(fbeta_score(y_test, y_pred, beta=beta))
 
         else:
@@ -132,21 +137,29 @@ class clf_scores:
             self.precisions.append(
                 precision_score(y_test, y_pred, sample_weight=test_weights))
             self.fones.append(f1_score(y_test, y_pred, sample_weight=test_weights))
+            self.recalls.append(recall_score(y_test, y_pred, sample_weight=test_weights))
             self.fbetas.append(fbeta_score(y_test, y_pred, sample_weight=test_weights, beta=beta))
             self.test_weights.append(test_weights)
 
         try:
             if self.grid_search_param_grid is not None:
-                self.feature_importance = clf_instance.best_estimator_.feature_importances_
+                self.temp_feature_importance = dict(zip(clf_instance.best_estimator_.feature_names_in_,
+                                                        clf_instance.best_estimator_.feature_importances_))
             else:
-                self.feature_importance = clf_instance.feature_importances_
-        except AttributeError as e:
-            print(e)
+                self.temp_feature_importance = dict(
+                    zip(clf_instance.feature_names_in_, clf_instance.feature_importances_))
+        except AttributeError:
             try:
-                self.feature_importance = clf_instance.coef_
+                # Using coef_ like this assumes model fit on data with standardised parameters.
+                if self.grid_search_param_grid is not None:
+                    self.temp_feature_importance = dict(zip(clf_instance.best_estimator_.feature_names_in_,
+                                                            clf_instance.best_estimator_.coef_[0]))
+                else:
+                    self.temp_feature_importance = dict(zip(clf_instance.feature_names_in_, clf_instance.coef_[0]))
             except AttributeError as e:
-                print(self.name)
                 print(e)
+                self.temp_feature_importance = dict(zip(clf_instance.feature_names_in_, clf_instance.feature_names_in_))
+        self.feature_importance = {k: [v] for k, v in self.temp_feature_importance.items()}
 
     def predict_on_unlabelled_data(self, X_train, y_train, unlab_data, train_weights=None):
 
@@ -172,6 +185,7 @@ class clf_scores:
 def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     acc_dict = {}
     prec_dict = {}
+    recall_dict = {}
     fone_dict = {}
     fbeta_dict = {}
 
@@ -179,6 +193,7 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
         acc_dict[model.name] = model.accuracies
 
         prec_dict[model.name] = model.precisions
+        recall_dict[model.name] = model.recalls
         fone_dict[model.name] = model.fones
         fbeta_dict[model.name] = model.fbetas
 
@@ -192,6 +207,12 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     prec_df.to_csv(os.path.join(output_dir, filetag + 'prec.csv'))
     output_boxplot(prec_df, os.path.join(output_dir, filetag + 'precision_boxplot.png'),
                    y_title='Precision')
+
+    recall_df = pd.DataFrame(recall_dict)
+    recall_df.describe().to_csv(os.path.join(output_dir, filetag + 'recall_means.csv'))
+    recall_df.to_csv(os.path.join(output_dir, filetag + 'recall.csv'))
+    output_boxplot(recall_df, os.path.join(output_dir, filetag + 'recall_boxplot.png'),
+                   y_title='Recall')
 
     f1_df = pd.DataFrame(fone_dict)
     f1_df.describe().to_csv(os.path.join(output_dir, filetag + 'f1_means.csv'))
@@ -236,6 +257,36 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
 
 
 def output_feature_importance(models: List[clf_scores], output_dir: str, filetag: str):
+    # TODO: Stitch all these together, get abs value for coefs and plot
+    dfs = []
     for model in models:
-        acc_df = pd.DataFrame(model.feature_importance)
+        acc_df = pd.DataFrame.from_dict(model.feature_importance, orient='index')
+        acc_df.columns = [filetag + model.name]
         acc_df.to_csv(os.path.join(output_dir, filetag + model.name + '_feature_importance.csv'))
+        dfs.append(acc_df)
+
+
+def plot_feature_imps(dfs, output_dir):
+    # TODO: Separate into disc and continuous vars and also models, as values across models aren't comparable
+    #  Not sure how useful this is due to stochastic nature of processes.
+    all_df = pd.concat(dfs, axis=1)
+    all_df.to_csv(os.path.join(output_dir, 'feature_importances.csv'))
+    abs_df = all_df.abs()
+    abs_df.plot.bar()
+    plt.tight_layout()
+    plt.show()
+
+
+if __name__ == '__main__':
+    models = ['Logit']
+    cases = ['itw_case', 'biased_case']
+    dfs = []
+    for m in models:
+        for c in cases:
+            df = pd.read_csv(
+                os.path.join('..', 'antimalarial_predictions', 'outputs', 'modelling', 'feature_importance',
+                             '_'.join([c, m, 'feature_importance.csv'])), index_col=0)
+            df.columns = ['_'.join([m, c])]
+            dfs.append(df)
+    plot_feature_imps(dfs, os.path.join('..', 'antimalarial_predictions', 'outputs', 'modelling',
+                                        'feature_importance'))
