@@ -40,8 +40,8 @@ class Test(unittest.TestCase):
 
     def test_tested_alks(self):
         temp_df = pd.read_csv(TEMP_ALL_TRAITS_CSV, index_col=0)
-        problem_df = temp_df[(temp_df['Tested_for_Alkaloids'] == 1) & (
-                temp_df['Alkaloids_test_notes'].isna() & temp_df['Alkaloid_classes'].isna())]
+        problem_df = temp_df[(temp_df['Tested_for_Alkaloids'] == 0) & (
+                (temp_df['Alkaloids']==1) | (temp_df['Alkaloids']==0))]
 
         # Species which need updating in trait tables
         # Likely known alkaloids from KN but not been added to manual table

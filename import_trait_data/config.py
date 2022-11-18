@@ -15,33 +15,15 @@ NAME_COLUMNS = [
 
 COLUMNS_TO_DROP = [
     "Ref_Alks",
-    "Alkaloids_test_notes",
-    "Alk_classes_tested_for",
-    'Alkaloid_classes',
-    'Alkaloid_class_absences',
-    'Extraction_Method',
-    'Type_of_Test',
-    "Cardenolides",
-    'Cardenolides_details',
-    'Cardenolides_Ref',
-    "Steroids",
-    'Steroids_details',
-    'Steroids_Ref',
-    'General_Phytochem_notes',
-    "Alkaloid_mainclass(conal)",
-    "Alkaloid_otherclasses",
-    "Alkaloid_class_notes",
+
+
+
     "Ref_H_Mal",
     "History_Fever",
     "Ref_H_Fever",
-    "Tested_Antimalarial",
-    "Authors_Activity_Label",
-    "Positive_Control_Used",
-    "Given_Activities",
+
     "Ref_Activity",
-    "General_notes",
-    "MPNS_notes",
-    "Details",
+
     "Name",
     "Species"
 

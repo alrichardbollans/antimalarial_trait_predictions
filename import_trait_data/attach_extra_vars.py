@@ -8,7 +8,8 @@ from logan_manually_collected_data import logan_encoded_traits_csv
 from logan_medicinal_usage_vars import output_logan_medicinal_csv, output_logan_malarial_csv
 from logan_metabolite_vars import logan_antibac_metabolite_hits_output_csv, logan_alkaloid_hits_output_csv, \
     logan_steroid_hits_output_csv, logan_cardenolide_hits_output_csv
-from logan_morphological_vars import logan_habits_output_csv, logan_spines_output_csv, logan_no_spines_output_csv, \
+from logan_morphological_vars import logan_habits_output_csv, logan_spines_output_csv, \
+    logan_no_spines_output_csv, \
     logan_hairy_output_csv
 from logan_wcsp_distributions import logan_distributions_csv
 from logan_wikipedia_vars import output_logan_wiki_csv
@@ -65,12 +66,15 @@ def append_wcvp_taxa_to_trait_df(df: pd.DataFrame) -> pd.DataFrame:
     # Add accepted species ids
     accepted_samples_not_in_trait_df['Accepted_Species_ID'] = np.nan
     accepted_samples_not_in_trait_df.loc[accepted_samples_not_in_trait_df[COL_NAMES['acc_rank']] == 'Species',
-                                         'Accepted_Species_ID'] = accepted_samples_not_in_trait_df['Accepted_ID']
+                                         'Accepted_Species_ID'] = accepted_samples_not_in_trait_df[
+        'Accepted_ID']
     accepted_samples_not_in_trait_df.loc[
-        accepted_samples_not_in_trait_df['parent_name'] == accepted_samples_not_in_trait_df[COL_NAMES['acc_species']],
+        accepted_samples_not_in_trait_df['parent_name'] == accepted_samples_not_in_trait_df[
+            COL_NAMES['acc_species']],
         'Accepted_Species_ID'] = accepted_samples_not_in_trait_df['parent_kew_id']
 
-    if len(accepted_samples_not_in_trait_df[accepted_samples_not_in_trait_df['Accepted_Species_ID'].isna()].index) > 0:
+    if len(accepted_samples_not_in_trait_df[
+               accepted_samples_not_in_trait_df['Accepted_Species_ID'].isna()].index) > 0:
         raise ValueError(
             f'Unassigned accepted species ids: {accepted_samples_not_in_trait_df[accepted_samples_not_in_trait_df["Accepted_Species_ID"]]}')
 
@@ -107,7 +111,6 @@ def encode_habits(df: pd.DataFrame) -> pd.DataFrame:
             return ['unknown']
 
     df['Habit'] = df['Habit'].apply(convert_habits_to_lists)
-
 
     multilabels = df.Habit.str.join('|').str.get_dummies()
     df = df.join(multilabels)
@@ -226,7 +229,8 @@ def merge_new_var_from_data(in_df: pd.DataFrame, var_name: str, var_csvs: List[s
             raise ValueError(f'variable with unresolved duplicates: {var_name}')
 
     # First match precisely
-    var_accepted_names = var_df[[COL_NAMES['acc_name'], var_name]].dropna(subset=[COL_NAMES['acc_name'], var_name])
+    var_accepted_names = var_df[[COL_NAMES['acc_name'], var_name]].dropna(
+        subset=[COL_NAMES['acc_name'], var_name])
     updated_df = pd.merge(in_df, var_accepted_names, how='left', on=COL_NAMES['acc_name'])
     if level != 'precise':
 
@@ -272,6 +276,9 @@ def merge_new_var_from_data(in_df: pd.DataFrame, var_name: str, var_csvs: List[s
 def modify_related_features(df: pd.DataFrame):
     df['Emergence'] = df[["Spines", "Hairs"]].max(axis=1)
     df['Medicinal'] = df[["Medicinal", "Antimalarial_Use", "History_Fever"]].max(axis=1)
+    df['non_nan_Alkaloids'] = (~df['Alkaloids'].isna()).astype(int)
+    df['Tested_for_Alkaloids'] = df[["non_nan_Alkaloids", "Tested_for_Alkaloids"]].max(axis=1)
+    df.drop(columns=['non_nan_Alkaloids'], inplace=True)
 
 
 def reset_dtypes(df: pd.DataFrame) -> pd.DataFrame:
@@ -303,7 +310,8 @@ def reset_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def attach_new_var_hits_absences(df: pd.DataFrame, var_name: str, hit_csvs: List[str], absence_csvs: List[str],
+def attach_new_var_hits_absences(df: pd.DataFrame, var_name: str, hit_csvs: List[str],
+                                 absence_csvs: List[str],
                                  level='precise',
                                  priority=1):
     if priority == 1:
@@ -384,9 +392,9 @@ def main():
                    [rub_apoc_alkaloid_hits_output_csv, logan_alkaloid_hits_output_csv],
                    level='species')
 
-    updated_trait_df['Tested_for_Alkaloids'] = (~updated_trait_df['Alkaloids'].isna()).astype(int)
     ### Genera
-    updated_trait_df = merge_new_var_from_data(updated_trait_df, 'Habit', [habits_output_csv, logan_habits_output_csv],
+    updated_trait_df = merge_new_var_from_data(updated_trait_df, 'Habit',
+                                               [habits_output_csv, logan_habits_output_csv],
                                                original_name_col='genus', level='genera')
 
     # First attach data by exact matches, then by species and then by genera (only nans are overwritten)
@@ -403,7 +411,8 @@ def main():
             species_df[species_df['Genus'] == x.Genus]),
         axis=1)
     richest = updated_trait_df['Richness'].max()
-    print(f'Richest genus: {updated_trait_df[updated_trait_df["Richness"] == 1]["Genus"].unique()}:{richest} species')
+    print(
+        f'Richest genus: {updated_trait_df[updated_trait_df["Richness"] == 1]["Genus"].unique()}:{richest} species')
     # Scale richness:
     updated_trait_df['Richness'] = updated_trait_df['Richness'].divide(richest)
 
