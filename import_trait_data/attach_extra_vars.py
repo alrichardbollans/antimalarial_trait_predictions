@@ -6,8 +6,7 @@ from logan_climate_vars import logan_compiled_climate_vars_csv
 from logan_common_name_vars import output_logan_common_names_csv
 from logan_manually_collected_data import logan_encoded_traits_csv
 from logan_medicinal_usage_vars import output_logan_medicinal_csv, output_logan_malarial_csv
-from logan_metabolite_vars import logan_antibac_metabolite_hits_output_csv, logan_alkaloid_hits_output_csv, \
-    logan_steroid_hits_output_csv, logan_cardenolide_hits_output_csv
+from logan_metabolite_vars import logan_alkaloid_hits_output_csv
 from logan_morphological_vars import logan_habits_output_csv, logan_spines_output_csv, \
     logan_no_spines_output_csv, \
     logan_hairy_output_csv
@@ -33,10 +32,8 @@ from morphological_vars import spines_output_csv, hairy_output_csv, no_spines_ou
 from poison_vars import output_poison_csv, output_nonpoison_csv
 from taxa_lists import get_all_taxa
 from wikipedia_vars import output_wiki_csv
-from metabolite_vars import rub_apoc_antibac_metabolite_hits_output_csv, rub_apoc_cardenolide_hits_output_csv, \
-    rub_apoc_steroid_hits_output_csv, rub_apoc_alkaloid_hits_output_csv
+from metabolite_vars import rub_apoc_alkaloid_hits_output_csv
 
-variable_renaming = {}
 
 
 def append_wcvp_taxa_to_trait_df(df: pd.DataFrame) -> pd.DataFrame:

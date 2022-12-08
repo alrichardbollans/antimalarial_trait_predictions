@@ -24,7 +24,8 @@ def basic_data_prep(train_data: pd.DataFrame, traits_to_use: List[str], dropna_c
     return X, y
 
 
-def get_semi_supervised_data(X_train: pd.DataFrame, y_train: pd.DataFrame, unlabelled_data_to_use: pd.DataFrame):
+def get_semi_supervised_data(X_train: pd.DataFrame, y_train: pd.DataFrame,
+                             unlabelled_data_to_use: pd.DataFrame):
     """
     Sometimes specific unlabelled data should be supplied in order to match encodings fo varaibles etc.
     :param X_train:
@@ -74,7 +75,8 @@ def knn_imputer(train_data: pd.DataFrame, test_data: pd.DataFrame, unlabelled: p
 
 def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_index,
                            unlabelled_data: pd.DataFrame = None,
-                           impute: bool = True, variance: float = None, categorical_features: List[str] = None,
+                           impute: bool = True, variance: float = None,
+                           categorical_features: List[str] = None,
                            scale: bool = True):
     from sklearn.feature_selection import VarianceThreshold
 
@@ -147,7 +149,8 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_i
                                      vars_to_rediscretise=vars_to_rediscretise)
 
         if unlabelled_data is not None:
-            imputed_unlabelled = knn_imputer(variance_X_train, variance_unlabelled, unlabelled=variance_unlabelled,
+            imputed_unlabelled = knn_imputer(variance_X_train, variance_unlabelled,
+                                             unlabelled=variance_unlabelled,
                                              vars_to_rediscretise=vars_to_rediscretise)
         else:
             imputed_unlabelled = variance_unlabelled
