@@ -27,6 +27,7 @@ def output_boxplot(df: pd.DataFrame, out_file: str, y_title: str):
     import matplotlib.pyplot as plt
     import seaborn as sns
     sns.boxplot(x='Model', y=y_title, data=boxplot_df)
+    plt.tight_layout()
     plt.savefig(out_file)
     plt.close()
 

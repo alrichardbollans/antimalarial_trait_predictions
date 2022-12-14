@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from import_trait_data import TARGET_COLUMN, BINARY_VARS, DISCRETE_VARS
+from import_trait_data import TARGET_COLUMN, BINARY_VARS, DISCRETE_VARS, TRAITS_WITH_NANS
 
 
 def basic_data_prep(train_data: pd.DataFrame, traits_to_use: List[str], dropna_cols=False, dropna_rows=False,
@@ -73,7 +73,7 @@ def knn_imputer(train_data: pd.DataFrame, test_data: pd.DataFrame, unlabelled: p
     return out_df
 
 
-def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_index,
+def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, test_index=None,
                            unlabelled_data: pd.DataFrame = None,
                            impute: bool = True, variance: float = None,
                            categorical_features: List[str] = None,
@@ -83,13 +83,29 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index, test_i
     import category_encoders as ce
     from sklearn.compose import ColumnTransformer
 
-    # Note iloc select by position rather than index label
-    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-
+    if train_index is not None and test_index is not None:
+        # Note iloc select by position rather than index label
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    else:
+        X_train = X
+        X_test = X
+        y_train = y
+        y_test = y
+    if (train_index is not None and test_index is None) or (test_index is not None and train_index is None):
+        raise ValueError
     # Target encode categorical features
     # Defaults to mean when transforming unknown values
     if categorical_features is not None:
+        for c in categorical_features:
+            if c not in TRAITS_WITH_NANS:
+                # If possible to convert to float, raise error as these should be strings
+                try:
+                    test1 = X_train[c].astype(float)
+                except ValueError:
+                    pass
+                else:
+                    raise ValueError(f'Trying to target encode floats: {c}. Have they already been encoded?')
         target_encoder = ce.TargetEncoder(cols=categorical_features)
         target_encoder.fit(X_train, y_train)
         encoded_X_train = target_encoder.transform(X_train)

@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from pkg_resources import resource_filename
 
 from bias_correction_and_summaries import oversample_by_weight, ALL_TRAITS, LABELLED_TRAITS, \
-    vars_to_use_in_bias_analysis, known_biasing_features, UNLABELLED_TRAITS, to_target_encode
+    vars_to_use_in_bias_analysis, UNLABELLED_TRAITS
 from import_trait_data import CONTINUOUS_VARS, DISCRETE_VARS
 
 _output_path = resource_filename(__name__, 'outputs')
@@ -22,9 +22,8 @@ def plot_corrected_means(vars_to_compare: List[str], out_filename: str):
     from sklearn.preprocessing import MinMaxScaler
 
     logit_corrected_df = \
-        oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit',
-                             known_biasing_features, to_target_encode)[
-            vars_to_compare]
+    oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit')[
+        vars_to_compare]
 
     all_traits = ALL_TRAITS[vars_to_compare]
     labelled_traits = LABELLED_TRAITS[vars_to_compare]

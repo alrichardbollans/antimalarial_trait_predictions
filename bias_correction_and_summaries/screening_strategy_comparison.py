@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 from bias_correction_and_summaries import oversample_by_weight, LABELLED_TRAITS, bias_output_dir, \
-    known_biasing_features, UNLABELLED_TRAITS, to_target_encode
+    UNLABELLED_TRAITS
 from import_trait_data import TARGET_COLUMN
 
 metric_output_dir = os.path.join(bias_output_dir, 'screening_comparison')
@@ -64,9 +64,6 @@ def get_precisions(corrected_df: pd.DataFrame):
 def get_model_precisions():
     approaches = ['Random', 'Ethno (G)', 'Ethno (M)']
 
-    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit',
-                                              known_biasing_features, cols_to_target_encode=to_target_encode
-                                              )
     logit_corrected_precisions = get_precisions(logit_corrected_df)
 
     unadjusted_precisions = get_precisions(LABELLED_TRAITS)
@@ -81,9 +78,6 @@ def get_model_precisions():
 def get_model_accuracies():
     approaches = ['Random', 'Ethno (G)', 'Ethno (M)']
 
-    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit',
-                                              known_biasing_features, cols_to_target_encode=to_target_encode
-                                              )
     logit_corrected_accs = get_accuracies(logit_corrected_df)
 
     unadjusted_accs = get_accuracies(LABELLED_TRAITS)
@@ -102,4 +96,5 @@ def main():
 
 
 if __name__ == '__main__':
+    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS)
     main()

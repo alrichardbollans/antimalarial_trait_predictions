@@ -1,32 +1,20 @@
 import os
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
 from cvxopt import matrix, solvers
+from pandas import DataFrame
 from pkg_resources import resource_filename
 from sklearn.linear_model import LogisticRegression
 
-from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS
+from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS, bias_output_dir, \
+    vars_without_target_to_use, \
+    all_features_to_target_encode
+from general_preprocessing_and_testing import do_basic_preprocessing
 from import_trait_data import CONTINUOUS_VARS
 
-bias_output_dir = resource_filename(__name__, 'outputs')
 _temp_output_dir = resource_filename(__name__, 'temp_outputs')
-
-# num_features = [x for x in NUMERIC_TRAITS if x in vars_without_target_to_use] + ['Family']
-
-# Choice motivated in discussion
-known_biasing_features = ['Antimalarial_Use',
-                          'Tested_for_Alkaloids',
-                          'Medicinal',
-                          'In_Malarial_Region', 'Genus', 'Family']
-to_target_encode = ['Genus', 'Family']
-
-
-def normalise_weight_column(df: pd.DataFrame):
-    max_val = df['weight'].max()
-    df['weight'] = df['weight'] / max_val
-    return df
 
 
 def kmm_correction(sample, underlying_pop_df, selection_vars, weight_bound=1000, no_features=None,
@@ -71,24 +59,28 @@ def kmm_correction(sample, underlying_pop_df, selection_vars, weight_bound=1000,
         # Kernel must be universal
         K = polynomial_kernel(np.asarray(sample_to_use), degree=no_features)
         kappa = np.sum(
-            polynomial_kernel(np.asarray(sample_to_use), np.asarray(underlying_pop_to_use), degree=no_features) * float(
+            polynomial_kernel(np.asarray(sample_to_use), np.asarray(underlying_pop_to_use),
+                              degree=no_features) * float(
                 number_samples) / float(
                 num_test_cases), axis=1)
 
     elif kernel_type == 'rbf':
         gam = 10
         K = rbf_kernel(np.asarray(sample_to_use), gamma=gam)
-        kappa = np.sum(rbf_kernel(np.asarray(sample_to_use), np.asarray(underlying_pop_to_use), gamma=gam) * float(
-            number_samples) / float(
-            num_test_cases), axis=1)
+        kappa = np.sum(
+            rbf_kernel(np.asarray(sample_to_use), np.asarray(underlying_pop_to_use), gamma=gam) * float(
+                number_samples) / float(
+                num_test_cases), axis=1)
     else:
         raise ValueError('Unknown Kernel method')
     K = matrix(K)
     kappa = matrix(kappa)
-    G = matrix(np.r_[np.ones((1, number_samples)), -np.ones((1, number_samples)), np.eye(number_samples), -np.eye(
-        number_samples)])
+    G = matrix(
+        np.r_[np.ones((1, number_samples)), -np.ones((1, number_samples)), np.eye(number_samples), -np.eye(
+            number_samples)])
     h = matrix(
-        np.r_[number_samples * (1 + epsilon), number_samples * (epsilon - 1), 1 * np.ones((number_samples,)), np.zeros(
+        np.r_[number_samples * (1 + epsilon), number_samples * (epsilon - 1), 1 * np.ones(
+            (number_samples,)), np.zeros(
             (number_samples,))])
 
     sol = solvers.qp(K, -kappa, G, h)
@@ -117,7 +109,8 @@ def ratio_correction(trait_df, underlying_pop_df, selection_vars, max_weight=Non
             binned_c = c + '_binned'
             # Generate bins from all data
 
-            all_data_for_binning[binned_c], bins = pd.cut(all_data_for_binning[c], 2, labels=[0, 1], retbins=True)
+            all_data_for_binning[binned_c], bins = pd.cut(all_data_for_binning[c], 2, labels=[0, 1],
+                                                          retbins=True)
             underlying_pop_df_copy[binned_c] = pd.cut(underlying_pop_df_copy[c], bins, labels=[0, 1])
             trait_df_copy[binned_c] = pd.cut(trait_df_copy[c], bins, labels=[0, 1])
 
@@ -128,7 +121,8 @@ def ratio_correction(trait_df, underlying_pop_df, selection_vars, max_weight=Non
             cols_to_drop_at_end.append(binned_c)
     biased_data_combinations = trait_df_copy.groupby(selection_vars_copy, as_index=False,
                                                      dropna=False).size()
-    all_data_combinations = underlying_pop_df_copy.groupby(selection_vars_copy, as_index=False, dropna=False).size()
+    all_data_combinations = underlying_pop_df_copy.groupby(selection_vars_copy, as_index=False,
+                                                           dropna=False).size()
 
     # Merge on these biasing variables to add n and m columns
     m = trait_df_copy.merge(all_data_combinations, on=selection_vars_copy, how='left')
@@ -151,56 +145,46 @@ def ratio_correction(trait_df, underlying_pop_df, selection_vars, max_weight=Non
     return out
 
 
-def logit_correction(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, selection_vars: List[str],
-                     cols_to_target_encode: List[str]) -> pd.DataFrame:
+def logit_correction(trait_df: pd.DataFrame, unlabelled_pop_df: pd.DataFrame, impute: bool = True,
+                     scale: bool = True) -> Tuple[
+    DataFrame, DataFrame]:
     selected = trait_df.copy(deep=True)
-    population_copy = underlying_pop_df.copy(deep=True)[selection_vars]
+    unlabelled_population_copy = unlabelled_pop_df.copy(deep=True)
 
-    all_data = pd.concat([selected, population_copy])
-    dup_df1 = all_data[all_data.duplicated()]
+    selected['selected'] = 1
+    unlabelled_population_copy['selected'] = 0
+
+    train = pd.concat([selected, unlabelled_population_copy])
+
+    dup_df1 = train[train.duplicated(subset=vars_without_target_to_use, keep=False)]
     if len(dup_df1.index) > 0:
-        print('Warning: repeated elements in sample and underlying pop. for Logit correction')
-        print('Copies appearing in sample should be removed from underlying pop.')
         print(dup_df1)
         dup_df1.to_csv(os.path.join(_temp_output_dir, 'logit_dups.csv'))
 
-    selected['selected'] = 1
-    population_copy['selected'] = 0
-
-    train = pd.concat([selected, population_copy])
-
-    train_X = train[selection_vars]
+    train_X = train[vars_without_target_to_use]
     train_Y = train['selected']
 
-    if cols_to_target_encode is not None:
-        for c in cols_to_target_encode:
-            # If possible to convert to float, raise error as these should be strings
-            try:
-                test1 = train[c].astype(float)
-            except ValueError:
-                pass
-            else:
-                raise ValueError(f'Trying to target encode floats: {c}. Have they already been encoded?')
-        import category_encoders as ce
-        # Target encode genus and family for logit correction:
-        target_encoder = ce.TargetEncoder(cols=cols_to_target_encode)
-        target_encoder.fit(train_X, train_Y)
-        encoded_X_train = target_encoder.transform(train_X)
-        encoded_selected = target_encoder.transform(selected[selection_vars])
-    else:
-        encoded_X_train = train_X
-        encoded_selected = selected[selection_vars]
+    processed_X_train, processed_X_test, processed_unlabelled = \
+        do_basic_preprocessing(train_X, train_Y,
+                               unlabelled_data=None,
+                               categorical_features=all_features_to_target_encode,
+                               impute=impute,
+                               scale=scale)
 
     logit = LogisticRegression()
 
-    logit.fit(encoded_X_train, train_Y)
+    logit.fit(processed_X_train, train_Y)
+    prob_estimates = logit.predict_proba(processed_X_train)[:, 1]
+    train['P(s)'] = prob_estimates
+    train['weight'] = 1 / train['P(s)']
 
-    prob_estimates = logit.predict_proba(encoded_selected)[:, 1]
-    selected['weight'] = prob_estimates
-    selected['weight'] = 1 / selected['weight']
-    selected.drop(columns=['selected'], inplace=True)
-    pd.testing.assert_index_equal(selected.index, trait_df.index)
-    return selected
+    selected_out = train[train['selected'] == 1]
+    unlabelled_out = train[train['selected'] == 0]
+
+    pd.testing.assert_index_equal(selected_out.index, trait_df.index)
+    pd.testing.assert_index_equal(unlabelled_out.index, unlabelled_pop_df.index)
+
+    return selected_out, unlabelled_out
 
 
 def append_weight_column(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, method: str,
@@ -231,19 +215,12 @@ def append_weight_column(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame
     return out
 
 
-def oversample_by_weight(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, method: str,
-                         selection_vars, cols_to_target_encode=None) -> pd.DataFrame:
+def oversample_by_weight(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame, method: str = 'logit'
+                         ) -> pd.DataFrame:
     if method == 'logit':
-        weight_df = logit_correction(trait_df, underlying_pop_df, selection_vars=selection_vars,
-                                     cols_to_target_encode=cols_to_target_encode)
+        weight_df, unlabelled_weight_df = logit_correction(trait_df, underlying_pop_df)
     else:
-        weight_df = append_weight_column(trait_df, underlying_pop_df, method=method, selection_vars=selection_vars)
-
-    min_weight = weight_df['weight'].min()
-    if min_weight < 1:
-        # Can't always divide by min_weight as this creates enormous arrays
-
-        weight_df['weight'] = weight_df['weight'] / max(min_weight, 0.0001)
+        raise ValueError
 
     over_df = weight_df.loc[weight_df.index.repeat(weight_df['weight'])]
 
@@ -256,9 +233,9 @@ def oversample_by_weight(trait_df: pd.DataFrame, underlying_pop_df: pd.DataFrame
 
 
 def main():
-    logit_correction(LABELLED_TRAITS, UNLABELLED_TRAITS,
-                     known_biasing_features, to_target_encode).to_csv(
-        os.path.join(bias_output_dir, 'weigthed_data_logit.csv'))
+    selected_out, unlabelled_out = logit_correction(LABELLED_TRAITS, UNLABELLED_TRAITS)
+    selected_out.to_csv(
+        os.path.join(bias_output_dir, 'weigthed_labelled_data_logit.csv'))
 
 
 if __name__ == '__main__':

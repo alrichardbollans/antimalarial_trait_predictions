@@ -3,15 +3,14 @@ import os
 import pandas as pd
 
 from bias_correction_and_summaries import oversample_by_weight, bias_output_dir, LABELLED_TRAITS, \
-    known_biasing_features, UNLABELLED_TRAITS, to_target_encode
+    UNLABELLED_TRAITS
 from import_trait_data import TARGET_COLUMN
 
 summary_output_dir = os.path.join(bias_output_dir, 'corrected_summaries')
 
 
 def summarise_activites():
-    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit',
-                                              known_biasing_features, cols_to_target_encode=to_target_encode)
+    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit')
     apoc_family_values = [
         LABELLED_TRAITS[LABELLED_TRAITS['Family'] == 'Apocynaceae'][
             TARGET_COLUMN].mean(),
