@@ -53,10 +53,6 @@ def main():
     summarise_traits()
     plot_data_means()
 
-    # Write variables used
-    with open(os.path.join(bias_output_dir, 'variable_docs.txt'), 'w') as the_file:
-        the_file.write(f'vars_to_use_in_bias_analysis:{vars_to_use_in_bias_analysis}\n')
-
 
 if __name__ == '__main__':
     main()
