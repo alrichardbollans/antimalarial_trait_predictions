@@ -11,7 +11,7 @@ from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS, va
     logit_correction, vars_to_use_in_bias_analysis, \
     all_features_to_target_encode
 from general_preprocessing_and_testing import basic_data_prep, clf_scores, FeatureModel, \
-    do_basic_preprocessing, output_scores, get_fbeta_score
+    do_basic_preprocessing, output_scores, get_fbeta_score, bnn_scores
 
 _output_path = resource_filename(__name__, 'outputs')
 
@@ -47,7 +47,9 @@ def biased_case():
     ethnobotanical_scores = FeatureModel('Ethno (M)', ['Antimalarial_Use'])
     general_ethnobotanical_scores = FeatureModel('Ethno (G)', ['Medicinal'])
 
-    models = [xgb_scores, logit_scores, svc_scores, ethnobotanical_scores,
+    bnn_cv_scores = bnn_scores('BNN', os.path.join(_bias_model_dir, 'bnn_outputs'))
+
+    models = [bnn_cv_scores, xgb_scores, logit_scores, svc_scores, ethnobotanical_scores,
               general_ethnobotanical_scores]
 
     for i in range(10):
@@ -70,6 +72,8 @@ def biased_case():
                 if model.feature_model:
                     # Use unscaled/unimputed data for these models
                     model.add_cv_scores(X.iloc[test_index], y_test)
+                elif model.bnn:
+                    model.cv_instances(i, imputed_X_train, y_train, imputed_X_test, y_test)
                 else:
                     model.add_cv_scores(imputed_X_train, y_train, imputed_X_test, y_test)
 
@@ -108,8 +112,8 @@ def in_the_wild_test():
 
     ethnobotanical_scores = FeatureModel('Ethno (M)', ['Antimalarial_Use'])
     general_ethnobotanical_scores = FeatureModel('Ethno (G)', ['Medicinal'])
-
-    models = [xgb_scores, logit_scores, svc_scores,
+    bnn_cv_scores = bnn_scores('BNN', os.path.join(_itw_dir, 'bnn_outputs'))
+    models = [bnn_cv_scores, xgb_scores, logit_scores, svc_scores,
               ethnobotanical_scores,
               general_ethnobotanical_scores]
 
@@ -136,11 +140,16 @@ def in_the_wild_test():
                     # Use unscaled/unimputed data for these models
                     model.add_cv_scores(X.iloc[test_index], y_test,
                                         test_weights=test_weights)
+                elif model.bnn:
+                    model.cv_instances(i, imputed_X_train, y_train, imputed_X_test, y_test,
+                                       train_weights=train_weights,
+                                       test_weights=test_weights)
+
                 else:
                     model.add_cv_scores(imputed_X_train, y_train, imputed_X_test, y_test,
                                         train_weights=train_weights,
                                         test_weights=test_weights)
-            output_scores(models, _itw_dir, 'logit_')
+            output_scores(models, _itw_dir, 'itw_')
 
 
 def check_twinning():
