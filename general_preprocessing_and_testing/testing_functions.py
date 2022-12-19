@@ -8,6 +8,7 @@ from sklearn.metrics import accuracy_score, precision_score, f1_score, fbeta_sco
     average_precision_score, recall_score
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
+import np_bnn as bn
 
 beta = 0.5
 
@@ -34,6 +35,7 @@ def output_boxplot(df: pd.DataFrame, out_file: str, y_title: str):
 
 class FeatureModel:
     feature_model = True
+    bnn = False
 
     def __init__(self, name: str, feature_list: List[str]):
         self.name = name
@@ -68,9 +70,107 @@ class FeatureModel:
         return test_data[self.feature_list].max(axis=1).tolist()
 
 
+class bnn_scores:
+    bnn = True
+    feature_model = False
+
+    def __init__(self, name, log_dir, grid_search_param_grid=None, init_kwargs=None):
+        self.name = name
+        self.log_dir = log_dir
+        self.grid_search_param_grid = grid_search_param_grid
+        self.accuracies = []
+        self.y_reals = []
+        self.predict_probas = []
+        self.test_weights = []
+        self.precisions = []
+        self.recalls = []
+        self.fones = []
+        self.fbetas = []
+
+    @staticmethod
+    def get_y_preds(post_prob_predictions):
+        return np.argmax(post_prob_predictions, axis=1)
+
+    def cv_instances(self, i, transformed_train_data, y_train, transformed_test_data, y_test,
+                     train_weights=None,
+                     test_weights=None):
+        rseed = 1234
+        train_dat = bn.get_data(transformed_train_data, y_train,
+                                seed=rseed,
+                                testsize=0,
+                                randomize_order=False,
+                                instance_id=None, from_file=False)
+
+        bnn_model = bn.npBNN(train_dat,
+                             n_nodes=[10, 5],
+                             use_class_weights=0,  # set to 1 to use class weights for unbalanced classes
+                             actFun=bn.ActFun(fun="tanh"),
+                             use_bias_node=0,
+                             # 0) no bias node, 1) bias in input layer, 2) bias in input and hidden layers, 3) bias in input/hidden/output
+                             prior_f=1,  # 0) uniform, 1) normal, 2) Cauchy, 3) Laplace
+                             p_scale=1,
+                             # std for Normal, scale parameter for Cauchy and Laplace, boundaries for Uniform
+                             seed=rseed,
+                             init_std=0.1,  # st dev of the initial weights
+                             instance_weights=train_weights)
+
+        mcmc = bn.MCMC(bnn_model,
+                       n_iteration=10000,  # set to a higher number of more iterations
+                       sampling_f=10,  # sampling frequency
+                       adapt_f=0.3,  # use adaptive MCMC to target an acceptance rate between 0.3 and 0.6
+                       adapt_fM=0.6
+                       )
+
+        # initialize output files
+        out_file_name = "BNN_outfile_" + str(i)
+        logger = bn.postLogger(bnn_model, wdir=self.log_dir, filename=out_file_name, log_all_weights=0)
+
+        # run MCMC
+        bn.run_mcmc(bnn_model, mcmc, logger)
+
+        test_dat = bn.get_data(transformed_test_data, y_test,
+                               seed=rseed,
+                               testsize=1,
+                               randomize_order=False,
+                               instance_id=None, from_file=False)
+
+        # make predictions based on MCMC's estimated weights
+        # test data
+        post_pr_test = bn.predictBNN(test_dat['test_data'],
+                                     pickle_file=logger._pklfile,
+                                     test_labels=test_dat['test_labels'],
+                                     instance_id=test_dat['id_test_data'],
+                                     fname=test_dat['file_name'],
+                                     post_summary_mode=0)
+        post_prob_predictions = post_pr_test['post_prob_predictions']
+        print(post_pr_test['confusion_matrix'])
+        y_pred = self.get_y_preds(post_prob_predictions)
+        y_proba = post_prob_predictions[:, 1]
+        self.y_reals.append(y_test)
+        self.predict_probas.append(y_proba)
+
+        if test_weights is None:
+            self.accuracies.append(accuracy_score(y_test, y_pred))
+            self.precisions.append(
+                precision_score(y_test, y_pred))
+            self.fones.append(f1_score(y_test, y_pred))
+            self.recalls.append(recall_score(y_test, y_pred))
+            self.fbetas.append(fbeta_score(y_test, y_pred, beta=beta))
+
+        else:
+            self.accuracies.append(accuracy_score(y_test, y_pred, sample_weight=test_weights))
+            self.precisions.append(
+                precision_score(y_test, y_pred, sample_weight=test_weights))
+            self.fones.append(f1_score(y_test, y_pred, sample_weight=test_weights))
+            self.recalls.append(recall_score(y_test, y_pred, sample_weight=test_weights))
+            self.fbetas.append(fbeta_score(y_test, y_pred, sample_weight=test_weights, beta=beta))
+            self.test_weights.append(test_weights)
+
+
 class clf_scores:
     feature_model = False
     self_training = False
+    bnn = False
 
     def __init__(self, name, clf_class, grid_search_param_grid=None, init_kwargs=None):
         self.name = name
@@ -142,25 +242,25 @@ class clf_scores:
             self.fbetas.append(fbeta_score(y_test, y_pred, sample_weight=test_weights, beta=beta))
             self.test_weights.append(test_weights)
 
-        try:
-            if self.grid_search_param_grid is not None:
-                self.temp_feature_importance = dict(zip(clf_instance.best_estimator_.feature_names_in_,
-                                                        clf_instance.best_estimator_.feature_importances_))
-            else:
-                self.temp_feature_importance = dict(
-                    zip(clf_instance.feature_names_in_, clf_instance.feature_importances_))
-        except AttributeError:
-            try:
-                # Using coef_ like this assumes model fit on data with standardised parameters.
-                if self.grid_search_param_grid is not None:
-                    self.temp_feature_importance = dict(zip(clf_instance.best_estimator_.feature_names_in_,
-                                                            clf_instance.best_estimator_.coef_[0]))
-                else:
-                    self.temp_feature_importance = dict(zip(clf_instance.feature_names_in_, clf_instance.coef_[0]))
-            except AttributeError as e:
-                print(e)
-                self.temp_feature_importance = dict(zip(clf_instance.feature_names_in_, clf_instance.feature_names_in_))
-        self.feature_importance = {k: [v] for k, v in self.temp_feature_importance.items()}
+        # try:
+        #     if self.grid_search_param_grid is not None:
+        #         self.temp_feature_importance = dict(zip(clf_instance.best_estimator_.feature_names_in_,
+        #                                                 clf_instance.best_estimator_.feature_importances_))
+        #     else:
+        #         self.temp_feature_importance = dict(
+        #             zip(clf_instance.feature_names_in_, clf_instance.feature_importances_))
+        # except AttributeError:
+        #     try:
+        #         # Using coef_ like this assumes model fit on data with standardised parameters.
+        #         if self.grid_search_param_grid is not None:
+        #             self.temp_feature_importance = dict(zip(clf_instance.best_estimator_.feature_names_in_,
+        #                                                     clf_instance.best_estimator_.coef_[0]))
+        #         else:
+        #             self.temp_feature_importance = dict(zip(clf_instance.feature_names_in_, clf_instance.coef_[0]))
+        #     except AttributeError as e:
+        #         print(e)
+        #         self.temp_feature_importance = dict(zip(clf_instance.feature_names_in_, clf_instance.feature_names_in_))
+        # self.feature_importance = {k: [v] for k, v in self.temp_feature_importance.items()}
 
     def predict_on_unlabelled_data(self, X_train, y_train, unlab_data, train_weights=None):
 
@@ -237,7 +337,8 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
                 all_test_weights = np.concatenate(model.test_weights)
                 precision, recall, thresholds = precision_recall_curve(all_y_real, all_y_proba,
                                                                        sample_weight=all_test_weights)
-                all_ap_score = average_precision_score(all_y_real, all_y_proba, sample_weight=all_test_weights)
+                all_ap_score = average_precision_score(all_y_real, all_y_proba,
+                                                       sample_weight=all_test_weights)
             else:
                 precision, recall, thresholds = precision_recall_curve(all_y_real, all_y_proba)
                 all_ap_score = average_precision_score(all_y_real, all_y_proba)
@@ -266,28 +367,12 @@ def output_feature_importance(models: List[clf_scores], output_dir: str, filetag
         acc_df.to_csv(os.path.join(output_dir, filetag + model.name + '_feature_importance.csv'))
         dfs.append(acc_df)
 
-
-def plot_feature_imps(dfs, output_dir):
-    # TODO: Separate into disc and continuous vars and also models, as values across models aren't comparable
-    #  Not sure how useful this is due to stochastic nature of processes.
-    all_df = pd.concat(dfs, axis=1)
-    all_df.to_csv(os.path.join(output_dir, 'feature_importances.csv'))
-    abs_df = all_df.abs()
-    abs_df.plot.bar()
-    plt.tight_layout()
-    plt.show()
-
-
-if __name__ == '__main__':
-    models = ['Logit']
-    cases = ['itw_case', 'biased_case']
-    dfs = []
-    for m in models:
-        for c in cases:
-            df = pd.read_csv(
-                os.path.join('..', 'antimalarial_predictions', 'outputs', 'modelling', 'feature_importance',
-                             '_'.join([c, m, 'feature_importance.csv'])), index_col=0)
-            df.columns = ['_'.join([m, c])]
-            dfs.append(df)
-    plot_feature_imps(dfs, os.path.join('..', 'antimalarial_predictions', 'outputs', 'modelling',
-                                        'feature_importance'))
+# def plot_feature_imps(dfs, output_dir):
+#     # TODO: Separate into disc and continuous vars and also models, as values across models aren't comparable
+#     #  Not sure how useful this is due to stochastic nature of processes.
+#     all_df = pd.concat(dfs, axis=1)
+#     all_df.to_csv(os.path.join(output_dir, 'feature_importances.csv'))
+#     abs_df = all_df.abs()
+#     abs_df.plot.bar()
+#     plt.tight_layout()
+#     plt.show()

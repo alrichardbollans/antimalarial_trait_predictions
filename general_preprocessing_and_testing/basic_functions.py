@@ -92,8 +92,12 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
         X_test = X
         y_train = y
         y_test = y
+
+
     if (train_index is not None and test_index is None) or (test_index is not None and train_index is None):
         raise ValueError
+
+
     # Target encode categorical features
     # Defaults to mean when transforming unknown values
     if categorical_features is not None:
