@@ -22,7 +22,7 @@ def plot_corrected_means(vars_to_compare: List[str], out_filename: str):
     from sklearn.preprocessing import MinMaxScaler
 
     logit_corrected_df = \
-    oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS, 'logit')[
+    oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS)[
         vars_to_compare]
 
     all_traits = ALL_TRAITS[vars_to_compare]
