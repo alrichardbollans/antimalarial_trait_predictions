@@ -2,6 +2,7 @@ import ast
 import os
 
 import pandas as pd
+from getting_malarial_regions import get_tdwg3_codes, plot_countries
 from pkg_resources import resource_filename
 
 from bias_correction_and_summaries import quantbias_output_dir
@@ -26,7 +27,7 @@ def OHE_dists(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def plot_countries(df: pd.DataFrame, output_path: str, title: str = None):
+def plot_number_species_in_regions(df: pd.DataFrame, output_path: str, title: str = None):
     import matplotlib.pyplot as plt
     import matplotlib as mpl
     import cartopy.crs as ccrs
@@ -80,7 +81,7 @@ def plot_countries(df: pd.DataFrame, output_path: str, title: str = None):
     all_map_isos = [country.attributes['LEVEL3_COD'] for country in tdwg3_shp.records()]
     missed_names = [x for x in tdwg3_region_codes if x not in all_map_isos]
     print(f'iso codes not plotted on map: {missed_names}')
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(min_val, max_val))
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     sm._A = []
     plt.tight_layout()
     fig = plt.gcf()
@@ -119,12 +120,13 @@ def plot_active_data():
         os.path.join(_dist_output_dir, 'number_active_species_per_region.csv'),
         index=False)
 
-    plot_countries(out_df,
-                   os.path.join(_dist_output_dir,
-                                'number_active_native_species_per_region.png'))
+    plot_number_species_in_regions(out_df,
+                                   os.path.join(_dist_output_dir,
+                                                'number_active_native_species_per_region.png'))
+    return out_df
 
 
-def plot_labelled_data():
+def get_labelled_region_df():
     all_traits = pd.read_csv(IMPORTED_TRAIT_CSV)
     all_labelled_traits = all_traits.dropna(subset=[TARGET_COLUMN])
     all_labelled_species = all_labelled_traits[all_labelled_traits['Accepted_Rank'] == 'Species']
@@ -135,12 +137,17 @@ def plot_labelled_data():
                      'number_labelled_species_per_region.csv'),
         index=False)
 
-    plot_countries(out_df,
-                   os.path.join(_dist_output_dir,
-                                'number_labelled_native_species_per_region.png'))
+    return out_df
 
 
-def plot_all_data():
+def plot_labelled_data():
+    out_df = get_labelled_region_df()
+    plot_number_species_in_regions(out_df,
+                                   os.path.join(_dist_output_dir,
+                                                'number_labelled_native_species_per_region.png'))
+
+
+def get_all_region_df():
     all_traits = pd.read_csv(IMPORTED_TRAIT_CSV)
 
     all_species = all_traits[all_traits['Accepted_Rank'] == 'Species']
@@ -150,10 +157,15 @@ def plot_all_data():
         os.path.join(_dist_output_dir,
                      'number_species_per_region.csv'),
         index=False)
+    return out_df
 
-    plot_countries(out_df,
-                   os.path.join(_dist_output_dir,
-                                'number_native_species_per_region.png'))
+
+def plot_all_data():
+    out_df = get_all_region_df()
+
+    plot_number_species_in_regions(out_df,
+                                   os.path.join(_dist_output_dir,
+                                                'number_native_species_per_region.png'))
 
 
 def plot_proportion_active():
@@ -179,15 +191,21 @@ def plot_proportion_active():
     proportion_df['Number of Native Species'] = proportion_df['num_active'] / proportion_df['num_labelled']
     proportion_df.to_csv(os.path.join(_dist_output_dir,
                                       'proportion_active_species_per_region.csv'))
-    plot_countries(proportion_df,
-                   os.path.join(_dist_output_dir,
-                                'proportion_active_native_species_per_region.png'))
+    plot_number_species_in_regions(proportion_df,
+                                   os.path.join(_dist_output_dir,
+                                                'proportion_active_native_species_per_region.png'))
 
     prop_df_with_at_least_two_labelled = proportion_df[proportion_df['num_labelled'] > 2]
 
-    plot_countries(prop_df_with_at_least_two_labelled,
-                   os.path.join(_dist_output_dir,
-                                'proportion_active_gt2lab_species_per_region.png'))
+    plot_number_species_in_regions(prop_df_with_at_least_two_labelled,
+                                   os.path.join(_dist_output_dir,
+                                                'proportion_active_gt2lab_species_per_region.png'))
+
+
+def plot_malarial_regions():
+    codes = get_tdwg3_codes()
+    plot_countries(codes, 'Historical Malarial Regions',
+                   os.path.join(_dist_output_dir, 'malarial_countries.png'))
 
 
 def main():
@@ -195,6 +213,7 @@ def main():
     plot_labelled_data()
     plot_proportion_active()
     plot_all_data()
+    plot_malarial_regions()
 
 
 if __name__ == '__main__':
