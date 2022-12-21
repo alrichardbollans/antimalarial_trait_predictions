@@ -1,8 +1,11 @@
+import os
+
 import pandas as pd
 
-from import_trait_data import ACCEPTED_NAME_COLUMN, TARGET_COLUMN, COLUMNS_TO_DROP, NAME_COLUMNS, TEMP_ALL_TRAITS_CSV, \
+from import_trait_data import ACCEPTED_NAME_COLUMN, TARGET_COLUMN, COLUMNS_TO_DROP, NAME_COLUMNS, \
+    TEMP_ALL_TRAITS_CSV, \
     TRAITS_WITHOUT_NANS, GENERA_VARS, TRAITS, TAXONOMIC_VARS, IMPORTED_TRAIT_CSV, \
-    TRAITS_TO_DROP_AFTER_IMPORT, IMPORTED_LABELLED_TRAIT_CSV, IMPORTED_UNLABELLED_TRAIT_CSV
+    TRAITS_TO_DROP_AFTER_IMPORT, IMPORTED_LABELLED_TRAIT_CSV, IMPORTED_UNLABELLED_TRAIT_CSV, IMPORT_OUTPUT_DIR
 
 
 def remove_samples_with_no_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -113,6 +116,12 @@ def main():
     labelled_taxa.to_csv(IMPORTED_LABELLED_TRAIT_CSV)
     unlabelled_taxa = all_taxa[all_taxa[TARGET_COLUMN].isna()]
     unlabelled_taxa.to_csv(IMPORTED_UNLABELLED_TRAIT_CSV)
+
+
+    labelled_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'labelled trait summary.csv'))
+    unlabelled_taxa.describe().to_csv(
+        os.path.join(IMPORT_OUTPUT_DIR, 'unlabelled trait summary.csv'))
+    all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'all trait summary.csv'))
 
 
 if __name__ == '__main__':
