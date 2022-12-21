@@ -30,6 +30,10 @@ def activity_with_without_feature(labelled_df: pd.DataFrame, out_dir: str):
     # plt.show()
     plt.savefig(os.path.join(out_dir, 'presence_absence_means.png'))
     plt.close()
+    plt.cla()
+    plt.clf()
+    plt.cla()
+    plt.clf()
 
 
 def compare_active_vs_inactive(active_df: pd.DataFrame, inactive_df: pd.DataFrame, out_dir: str):
@@ -52,6 +56,8 @@ def compare_active_vs_inactive(active_df: pd.DataFrame, inactive_df: pd.DataFram
     # plt.show()
     plt.savefig(os.path.join(out_dir, 'activity_means.png'))
     plt.close()
+    plt.cla()
+    plt.clf()
 
 
 def venn_diagram(df: pd.DataFrame, out_dir: str):
@@ -81,44 +87,49 @@ def venn_diagram(df: pd.DataFrame, out_dir: str):
     # plt.show()
     plt.legend()
     plt.close()
+    plt.cla()
+    plt.clf()
+
+    # def plot_means_all_vs_labelled(dfs: List[pd.DataFrame]):
+    #     collection_of_means = []
+    #     for df in dfs:
+    #         collection_of_means.append(df.describe().loc[['mean']].values.tolist()[0])
+    #     # Remove features to not plot
+    #     habits = [c for c in _ALL_TRAITS.columns if 'habit_' in c]
+    #     all_traits = _ALL_TRAITS.drop(columns=[TARGET_COLUMN] + habits)
+    #     labelled_traits = LABELLED_TRAITS.drop(columns=[TARGET_COLUMN] + habits)
+    #     # Ethno Means
+    #     non_ethno_data = all_traits[all_traits['Medicinal'] == 0]
+    #     no_use_means = non_ethno_data.describe().loc[['mean']].values.tolist()[0]
+    #
+    #     ethno_data = all_traits[all_traits['Medicinal'] == 1]
+    #     history_of_use_means = ethno_data.describe().loc[['mean']].values.tolist()[0]
+    #
+    #     labelled_means = labelled_traits.describe().loc[['mean']].values.tolist()[0]
+    #     all_means = all_traits.describe().loc[['mean']].values.tolist()[0]
+    #
+    #     plt.rcParams['figure.figsize'] = [10, 6]
+    #     width = 0.2
+    #
+    #     X_axis = np.arange(len(labelled_traits.describe().columns.tolist()))
+    #
+    #     plt.bar(X_axis - width * 1.5, labelled_means, width=width, edgecolor='black', label='Labelled Data')
+    #     plt.bar(X_axis - width / 2, history_of_use_means, width=width, edgecolor='black', label='Medicinal Use')
+    #     plt.bar(X_axis + width / 2, no_use_means, width=width, edgecolor='black', label='Non-Medicinal Use')
+    #     plt.bar(X_axis + 1.5 * width, all_means, width=width, edgecolor='black', label='All Data')
+    #
+    #     plt.xticks(X_axis + width / 2, labelled_traits.describe().columns.tolist(), rotation=65)
+    #     plt.legend()
+    #     plt.xlabel('Feature')
+    #     plt.ylabel('Mean')
+    #     plt.tight_layout()
+    #     # plt.show()
+    #     plt.savefig(os.path.join(summary_output_dir, 'ethno_mean_comparison.png'))
+    #     plt.close()
+    plt.cla()
+    plt.clf()
 
 
-# def plot_means_all_vs_labelled(dfs: List[pd.DataFrame]):
-#     collection_of_means = []
-#     for df in dfs:
-#         collection_of_means.append(df.describe().loc[['mean']].values.tolist()[0])
-#     # Remove features to not plot
-#     habits = [c for c in _ALL_TRAITS.columns if 'habit_' in c]
-#     all_traits = _ALL_TRAITS.drop(columns=[TARGET_COLUMN] + habits)
-#     labelled_traits = LABELLED_TRAITS.drop(columns=[TARGET_COLUMN] + habits)
-#     # Ethno Means
-#     non_ethno_data = all_traits[all_traits['Medicinal'] == 0]
-#     no_use_means = non_ethno_data.describe().loc[['mean']].values.tolist()[0]
-#
-#     ethno_data = all_traits[all_traits['Medicinal'] == 1]
-#     history_of_use_means = ethno_data.describe().loc[['mean']].values.tolist()[0]
-#
-#     labelled_means = labelled_traits.describe().loc[['mean']].values.tolist()[0]
-#     all_means = all_traits.describe().loc[['mean']].values.tolist()[0]
-#
-#     plt.rcParams['figure.figsize'] = [10, 6]
-#     width = 0.2
-#
-#     X_axis = np.arange(len(labelled_traits.describe().columns.tolist()))
-#
-#     plt.bar(X_axis - width * 1.5, labelled_means, width=width, edgecolor='black', label='Labelled Data')
-#     plt.bar(X_axis - width / 2, history_of_use_means, width=width, edgecolor='black', label='Medicinal Use')
-#     plt.bar(X_axis + width / 2, no_use_means, width=width, edgecolor='black', label='Non-Medicinal Use')
-#     plt.bar(X_axis + 1.5 * width, all_means, width=width, edgecolor='black', label='All Data')
-#
-#     plt.xticks(X_axis + width / 2, labelled_traits.describe().columns.tolist(), rotation=65)
-#     plt.legend()
-#     plt.xlabel('Feature')
-#     plt.ylabel('Mean')
-#     plt.tight_layout()
-#     # plt.show()
-#     plt.savefig(os.path.join(summary_output_dir, 'ethno_mean_comparison.png'))
-#     plt.close()
 def plot_means_all_vs_labelled(all_traits: pd.DataFrame, features_to_plot: List[str], output_file: str,
                                minmaxscale: bool = True):
     from matplotlib import pyplot as plt
@@ -144,7 +155,8 @@ def plot_means_all_vs_labelled(all_traits: pd.DataFrame, features_to_plot: List[
     all_means = all_traits.describe().loc[['mean']].values.tolist()[0]
     # unlabelled_means = unlabelled_traits.describe().loc[['mean']].values.tolist()[0]
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(8, 6))
+    plt.rc('font', size=12)
     width = 0.33
     plt.bar(X_axis, labelled_means, width=width, edgecolor='black', label='Labelled Sample')
     # plt.bar(X_axis + (width / 2), unlabelled_means, width=width, edgecolor='black', label='Unlabelled ')
@@ -157,3 +169,5 @@ def plot_means_all_vs_labelled(all_traits: pd.DataFrame, features_to_plot: List[
     plt.tight_layout()
     plt.savefig(output_file)
     plt.close()
+    plt.cla()
+    plt.clf()

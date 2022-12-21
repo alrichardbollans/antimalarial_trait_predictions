@@ -95,6 +95,9 @@ def plot_number_species_in_regions(df: pd.DataFrame, output_path: str, title: st
     # change the fontsize
 
     plt.savefig(output_path, dpi=50, bbox_inches='tight')
+    plt.close()
+    plt.cla()
+    plt.clf()
 
 
 def get_region_dataframe(df: pd.DataFrame):

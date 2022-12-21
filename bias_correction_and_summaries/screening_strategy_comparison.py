@@ -61,9 +61,8 @@ def get_precisions(corrected_df: pd.DataFrame):
     return precisions
 
 
-def get_model_precisions():
+def get_model_precisions(logit_corrected_df):
     approaches = ['Random', 'Ethno (G)', 'Ethno (M)']
-
     logit_corrected_precisions = get_precisions(logit_corrected_df)
 
     unadjusted_precisions = get_precisions(LABELLED_TRAITS)
@@ -75,7 +74,7 @@ def get_model_precisions():
     out.to_csv(os.path.join(metric_output_dir, 'precisions.csv'))
 
 
-def get_model_accuracies():
+def get_model_accuracies(logit_corrected_df):
     approaches = ['Random', 'Ethno (G)', 'Ethno (M)']
 
     logit_corrected_accs = get_accuracies(logit_corrected_df)
@@ -91,10 +90,11 @@ def get_model_accuracies():
 
 def main():
     # Estimate model performance in all regions
-    get_model_precisions()
-    get_model_accuracies()
+    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS)
+    get_model_precisions(logit_corrected_df)
+    get_model_accuracies(logit_corrected_df)
 
 
 if __name__ == '__main__':
-    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS)
+
     main()

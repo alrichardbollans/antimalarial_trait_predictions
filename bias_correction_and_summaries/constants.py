@@ -18,6 +18,8 @@ LABELLED_TRAITS = ALL_TRAITS[~(ALL_TRAITS[TARGET_COLUMN].isna())]
 UNLABELLED_TRAITS = ALL_TRAITS[ALL_TRAITS[TARGET_COLUMN].isna()]
 
 bias_output_dir = resource_filename(__name__, 'outputs')
+WEIGHTED_LABELLED_DATA = os.path.join(bias_output_dir, 'weigthed_labelled_data_logit.csv')
+WEIGHTED_UNLABELLED_DATA = os.path.join(bias_output_dir, 'weigthed_unlabelled_data_logit.csv')
 # Choice motivated in discussion
 apriori_known_biasing_features = ['Antimalarial_Use',
                                   'Tested_for_Alkaloids',

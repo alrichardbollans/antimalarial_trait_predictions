@@ -55,10 +55,10 @@ def compare_samples_discrete_vars(df1: pd.DataFrame, df2: pd.DataFrame, vars_to_
 
     d = pd.DataFrame(all_results)
 
-    d.set_axis(
+    d = d.set_axis(
         ['Feature', 'mwu_Statistic', 'mwu_p',
          'fisher_odds_ratio', 'fisher_p', 'chi2_stat', 'chi2_p'],
-        axis=1, inplace=True)
+        axis=1)
 
     if output_csv is not None:
         d.to_csv(output_csv)
@@ -86,10 +86,10 @@ def compare_samples_continuous_vars(df1: pd.DataFrame, df2: pd.DataFrame, output
 
     if len(all_results) > 0:
         d = pd.DataFrame(all_results)
-        d.set_axis(
+        d = d.set_axis(
             ['Feature', 'ks_Statistic', 'ks_p_value', 'mwu_Statistic', 'mwu_p_value'
              ],
-            axis=1, inplace=True)
+            axis=1)
     else:
         d = pd.DataFrame()
 

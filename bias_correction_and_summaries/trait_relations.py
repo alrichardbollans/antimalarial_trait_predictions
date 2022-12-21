@@ -80,6 +80,8 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
     f.tight_layout()
     plt.savefig(outfile)
     plt.close()
+    plt.cla()
+    plt.clf()
 
 
 def main():
