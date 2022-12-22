@@ -4,8 +4,10 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from import_trait_data import TARGET_COLUMN, BINARY_VARS, DISCRETE_VARS, TRAITS_WITH_NANS
 
+from import_trait_data import TARGET_COLUMN, BINARY_VARS, DISCRETE_VARS, TRAITS_WITH_NANS
+apriori_features_to_target_encode = ['Genus', 'Family']
+all_features_to_target_encode = apriori_features_to_target_encode + ['kg_mode']
 
 def basic_data_prep(train_data: pd.DataFrame, traits_to_use: List[str], dropna_cols=False, dropna_rows=False,
                     ):
@@ -162,7 +164,7 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
 
     # Impute missing data values
     if impute:
-        vars_to_rediscretise = [x for x in DISCRETE_VARS if x not in categorical_features]
+        vars_to_rediscretise = [x for x in DISCRETE_VARS if x not in all_features_to_target_encode]
         imputed_X_train = knn_imputer(variance_X_train, variance_X_train, unlabelled=variance_unlabelled,
                                       vars_to_rediscretise=vars_to_rediscretise)
         imputed_X_test = knn_imputer(variance_X_train, variance_X_test, unlabelled=variance_unlabelled,

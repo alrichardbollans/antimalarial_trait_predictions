@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from pkg_resources import resource_filename
 
+from general_preprocessing_and_testing import apriori_features_to_target_encode, all_features_to_target_encode
 from import_trait_data import IMPORTED_TRAIT_CSV, \
     TARGET_COLUMN, NUMERIC_TRAITS
 
@@ -25,8 +26,7 @@ apriori_known_biasing_features = ['Antimalarial_Use',
                                   'Tested_for_Alkaloids',
                                   'Medicinal',
                                   'In_Malarial_Region', 'Genus', 'Family']
-apriori_features_to_target_encode = ['Genus', 'Family']
-all_features_to_target_encode = apriori_features_to_target_encode + ['kg_mode']
+
 # Write variables used
 with open(os.path.join(bias_output_dir, 'variable_docs.txt'), 'w') as the_file:
     the_file.write(f'vars_to_use_in_bias_analysis:{vars_to_use_in_bias_analysis}\n')

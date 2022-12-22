@@ -31,11 +31,12 @@ def output_boxplot(df: pd.DataFrame, out_file: str, y_title: str):
     plt.tight_layout()
     plt.savefig(out_file)
     plt.close()
+    plt.cla()
+    plt.clf()
 
 
 class FeatureModel:
     feature_model = True
-    bnn = False
 
     def __init__(self, name: str, feature_list: List[str]):
         self.name = name
@@ -71,7 +72,6 @@ class FeatureModel:
 
 
 class bnn_scores:
-    bnn = True
     feature_model = False
 
     def __init__(self, name, log_dir, grid_search_param_grid=None, init_kwargs=None):
@@ -91,9 +91,9 @@ class bnn_scores:
     def get_y_preds(post_prob_predictions):
         return np.argmax(post_prob_predictions, axis=1)
 
-    def cv_instances(self, i, transformed_train_data, y_train, transformed_test_data, y_test,
-                     train_weights=None,
-                     test_weights=None):
+    def add_cv_scores(self, transformed_train_data, y_train, transformed_test_data, y_test,
+                      train_weights=None,
+                      test_weights=None):
         rseed = 1234
         train_dat = bn.get_data(transformed_train_data, y_train,
                                 seed=rseed,
@@ -122,7 +122,7 @@ class bnn_scores:
                        )
 
         # initialize output files
-        out_file_name = "BNN_outfile_" + str(i)
+        out_file_name = "BNN_outfile_"
         logger = bn.postLogger(bnn_model, wdir=self.log_dir, filename=out_file_name, log_all_weights=0)
 
         # run MCMC
@@ -170,7 +170,6 @@ class bnn_scores:
 class clf_scores:
     feature_model = False
     self_training = False
-    bnn = False
 
     def __init__(self, name, clf_class, grid_search_param_grid=None, init_kwargs=None):
         self.name = name
@@ -187,7 +186,6 @@ class clf_scores:
         self.init_kwargs = init_kwargs
 
     def do_grid_search(self, model, X_train, y_train, cv=10, all_train_weight=None):
-        # TODO: Improvements: using weights in scorer
 
         gs = GridSearchCV(
             estimator=model,
@@ -196,10 +194,11 @@ class clf_scores:
             n_jobs=-1,
             scoring=make_scorer(get_fbeta_score),
             verbose=1,
-            error_score='raise'
+            error_score='raise',
+            refit=True
 
         )
-        print(model)
+
         if all_train_weight is not None:
 
             fitted_model = gs.fit(X_train, y_train, sample_weight=all_train_weight)
@@ -343,12 +342,12 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
                 precision, recall, thresholds = precision_recall_curve(all_y_real, all_y_proba)
                 all_ap_score = average_precision_score(all_y_real, all_y_proba)
             plt.plot(recall, precision,
-                     label=model.name + r': (AP = %0.2f)' % all_ap_score,
+                     label=model.name,  # + r': (AP = %0.2f)' % all_ap_score,
                      lw=2, alpha=.8)
             curve_df = pd.DataFrame(
                 {'precision': list(precision), 'recall': list(recall), 'thresholds': list(thresholds) + [1]})
             curve_df.to_csv(os.path.join(output_dir, '_'.join([model.name, 'pr_curves.csv'])))
-
+    plt.rc('font', size=12)
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
     plt.xlabel('Recall')
@@ -356,6 +355,8 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     plt.legend(loc="lower right")
     plt.savefig(os.path.join(output_dir, '_'.join([filetag, 'pr_curves.png'])))
     plt.close()
+    plt.cla()
+    plt.clf()
 
 
 def output_feature_importance(models: List[clf_scores], output_dir: str, filetag: str):

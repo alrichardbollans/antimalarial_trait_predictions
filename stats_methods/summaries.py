@@ -158,7 +158,7 @@ def plot_means_all_vs_labelled(all_traits: pd.DataFrame, features_to_plot: List[
     plt.figure(figsize=(8, 6))
     plt.rc('font', size=12)
     width = 0.33
-    plt.bar(X_axis, labelled_means, width=width, edgecolor='black', label='Labelled Sample')
+    plt.bar(X_axis, labelled_means, width=width, edgecolor='black', label='Labelled Data')
     # plt.bar(X_axis + (width / 2), unlabelled_means, width=width, edgecolor='black', label='Unlabelled ')
     plt.bar(X_axis + (width), all_means, width=width, edgecolor='black', label='Underlying Pop.')
 

@@ -49,7 +49,7 @@ def plot_corrected_means(logit_corrected_df, vars_to_compare: List[str], out_fil
     # plt.bar(X_axis - width, kmm_corrected_means, width=width, edgecolor='black', label='KMM')
     # plt.bar(X_axis, simple_kmm_corrected_means, width=width, edgecolor='black', label='KMM Simple')
     # plt.bar(X_axis , ratio_corrected_means, width=width, edgecolor='black', label='Ratio')
-    plt.bar(X_axis + (width / 2), logit_corrected_means, width=width, edgecolor='black', label='Logit')
+    plt.bar(X_axis + (width / 2), logit_corrected_means, width=width, edgecolor='black', label='Corrected Data')
     # plt.bar(X_axis + 2 * width, simple_ratio_corrected_means, width=width, edgecolor='black', label='Ratio Simple')
     plt.bar(X_axis + 1.5 * width, all_means, width=width, edgecolor='black', label='Underlying Pop.')
 
