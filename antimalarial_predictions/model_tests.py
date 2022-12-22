@@ -32,10 +32,8 @@ def biased_case():
     unlab_X, unlab_y = basic_data_prep(unlabelled_data, prediction_vars_to_use)
 
     ### Models
-    xgb_scores = clf_scores('XGB', XGBClassifier, grid_search_param_grid={'max_depth': [3, 6, 9]
-                                                                          },
-                            init_kwargs={'eval_metric': get_fbeta_score, 'use_label_encoder': False,
-                                         'objective': 'binary:logistic'})
+    xgb_scores = clf_scores('XGB', XGBClassifier, grid_search_param_grid={'max_depth': [3, 6, 9]},
+                            init_kwargs={'objective': 'binary:logistic'})
     svc_scores = clf_scores('SVC', SVC,
                             grid_search_param_grid={'C': [0.1, 1, 10],
                                                     'class_weight': ['balanced', None, {0: 0.4, 1: 0.6}]},
@@ -72,8 +70,7 @@ def biased_case():
                 if model.feature_model:
                     # Use unscaled/unimputed data for these models
                     model.add_cv_scores(X.iloc[test_index], y_test)
-                elif model.bnn:
-                    model.cv_instances(i, imputed_X_train, y_train, imputed_X_test, y_test)
+
                 else:
                     model.add_cv_scores(imputed_X_train, y_train, imputed_X_test, y_test)
 
@@ -98,9 +95,7 @@ def in_the_wild_test():
     ### Models
 
     xgb_scores = clf_scores('XGB', XGBClassifier, grid_search_param_grid={
-        'max_depth': [3, 6, 9]
-    }, init_kwargs={'eval_metric': get_fbeta_score, 'use_label_encoder': False,
-                    'objective': 'binary:logistic'})
+        'max_depth': [3, 6, 9]}, init_kwargs={'objective': 'binary:logistic'})
     svc_scores = clf_scores('SVC', SVC, grid_search_param_grid={'C': [0.1, 1, 10],
                                                                 'class_weight': ['balanced', None,
                                                                                  {0: 0.4, 1: 0.6}]},
@@ -140,10 +135,6 @@ def in_the_wild_test():
                     # Use unscaled/unimputed data for these models
                     model.add_cv_scores(X.iloc[test_index], y_test,
                                         test_weights=test_weights)
-                elif model.bnn:
-                    model.cv_instances(i, imputed_X_train, y_train, imputed_X_test, y_test,
-                                       train_weights=train_weights,
-                                       test_weights=test_weights)
 
                 else:
                     model.add_cv_scores(imputed_X_train, y_train, imputed_X_test, y_test,
@@ -162,18 +153,19 @@ def check_twinning():
 
 
 def main():
-    check_twinning()
-    # biased_case()
-    in_the_wild_test()
-
     # Write variables used
     with open(os.path.join(_output_path, 'variable_docs.txt'), 'w') as the_file:
         the_file.write(f'vars_to_use_in_bias_analysis:{vars_to_use_in_bias_analysis}\n')
         the_file.write(f'prediction_vars_to_use:{prediction_vars_to_use}\n')
+        the_file.write(f'number of prediction vars:{len(prediction_vars_to_use)}\n')
         the_file.write(
             f'analysis_vars_not_in_predictions:{[c for c in vars_to_use_in_bias_analysis if c not in prediction_vars_to_use]}\n')
         the_file.write(
             f'pred_vars_not_in_analysis:{[c for c in prediction_vars_to_use if (c not in vars_without_target_to_use)]}\n')
+
+    check_twinning()
+    biased_case()
+    in_the_wild_test()
 
 
 if __name__ == '__main__':
