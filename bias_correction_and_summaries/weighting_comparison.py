@@ -59,7 +59,7 @@ def plot_corrected_means(logit_corrected_df, vars_to_compare: List[str], out_fil
     plt.xlabel('Trait')
     plt.ylabel('Scaled Mean')
     plt.tight_layout()
-    plt.savefig(os.path.join(_comparison_output_dir, out_filename))
+    plt.savefig(os.path.join(_comparison_output_dir, out_filename), dpi=400)
     plt.close()
     plt.cla()
     plt.clf()
@@ -74,9 +74,9 @@ def main():
     # Note this helps to verify the correction procedure but with limited labelled data it inevitably won't perfectly
     # match the underlying pop.
     disc_to_compare = [c for c in vars_to_use_in_bias_analysis if c in DISCRETE_VARS]
-    plot_corrected_means(logit_corrected_df, disc_to_compare, 'corrected_disc_means.png')
+    plot_corrected_means(logit_corrected_df, disc_to_compare, 'corrected_disc_means.jpg')
     cont_to_compare = [c for c in vars_to_use_in_bias_analysis if c in CONTINUOUS_VARS]
-    plot_corrected_means(logit_corrected_df, cont_to_compare, 'corrected_cont_means.png')
+    plot_corrected_means(logit_corrected_df, cont_to_compare, 'corrected_cont_means.jpg')
 
 
 if __name__ == '__main__':

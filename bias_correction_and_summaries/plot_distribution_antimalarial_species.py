@@ -94,7 +94,7 @@ def plot_number_species_in_regions(df: pd.DataFrame, output_path: str, title: st
     # plt.tight_layout()
     # change the fontsize
 
-    plt.savefig(output_path, dpi=50, bbox_inches='tight')
+    plt.savefig(output_path, dpi=400, bbox_inches='tight')
     plt.close()
     plt.cla()
     plt.clf()
@@ -125,7 +125,7 @@ def plot_active_data():
 
     plot_number_species_in_regions(out_df,
                                    os.path.join(_dist_output_dir,
-                                                'number_active_native_species_per_region.png'))
+                                                'number_active_native_species_per_region.jpg'))
     return out_df
 
 
@@ -147,7 +147,7 @@ def plot_labelled_data():
     out_df = get_labelled_region_df()
     plot_number_species_in_regions(out_df,
                                    os.path.join(_dist_output_dir,
-                                                'number_labelled_native_species_per_region.png'))
+                                                'number_labelled_native_species_per_region.jpg'))
 
 
 def get_all_region_df():
@@ -168,7 +168,7 @@ def plot_all_data():
 
     plot_number_species_in_regions(out_df,
                                    os.path.join(_dist_output_dir,
-                                                'number_native_species_per_region.png'))
+                                                'number_native_species_per_region.jpg'))
 
 
 def plot_proportion_active():
@@ -196,19 +196,19 @@ def plot_proportion_active():
                                       'proportion_active_species_per_region.csv'))
     plot_number_species_in_regions(proportion_df,
                                    os.path.join(_dist_output_dir,
-                                                'proportion_active_native_species_per_region.png'))
+                                                'proportion_active_native_species_per_region.jpg'))
 
     prop_df_with_at_least_two_labelled = proportion_df[proportion_df['num_labelled'] > 2]
 
     plot_number_species_in_regions(prop_df_with_at_least_two_labelled,
                                    os.path.join(_dist_output_dir,
-                                                'proportion_active_gt2lab_species_per_region.png'))
+                                                'proportion_active_gt2lab_species_per_region.jpg'))
 
 
 def plot_malarial_regions():
     codes = get_tdwg3_codes()
     plot_countries(codes, 'Historical Malarial Regions',
-                   os.path.join(_dist_output_dir, 'malarial_countries.png'))
+                   os.path.join(_dist_output_dir, 'malarial_countries.jpg'))
 
 
 def main():

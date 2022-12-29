@@ -78,7 +78,7 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
     plt.yticks(rotation=0)
 
     f.tight_layout()
-    plt.savefig(outfile)
+    plt.savefig(outfile, dpi=400)
     plt.close()
     plt.cla()
     plt.clf()
@@ -87,7 +87,7 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
 def main():
     bin_traits = [c for c in vars_to_use_in_bias_analysis if c in BINARY_VARS and c not in HABIT_COLS]
     co_occ_df = make_cooccur_df(ALL_TRAITS, bin_traits + [TARGET_COLUMN])
-    make_heatmap(co_occ_df, os.path.join(_comparison_output_dir, 'bin_heatmap.png'))
+    make_heatmap(co_occ_df, os.path.join(_comparison_output_dir, 'bin_heatmap.jpg'))
 
 
 if __name__ == '__main__':

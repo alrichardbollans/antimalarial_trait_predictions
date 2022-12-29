@@ -29,7 +29,7 @@ def output_boxplot(df: pd.DataFrame, out_file: str, y_title: str):
     import seaborn as sns
     sns.boxplot(x='Model', y=y_title, data=boxplot_df)
     plt.tight_layout()
-    plt.savefig(out_file)
+    plt.savefig(out_file, dpi=400)
     plt.close()
     plt.cla()
     plt.clf()
@@ -300,30 +300,30 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     acc_df = pd.DataFrame(acc_dict)
     acc_df.describe().to_csv(os.path.join(output_dir, filetag + 'acc_means.csv'))
     acc_df.to_csv(os.path.join(output_dir, filetag + 'acc.csv'))
-    output_boxplot(acc_df, os.path.join(output_dir, filetag + 'accuracy_boxplot.png'), y_title='Accuracy')
+    output_boxplot(acc_df, os.path.join(output_dir, filetag + 'accuracy_boxplot.jpg'), y_title='Accuracy')
 
     prec_df = pd.DataFrame(prec_dict)
     prec_df.describe().to_csv(os.path.join(output_dir, filetag + 'prec_means.csv'))
     prec_df.to_csv(os.path.join(output_dir, filetag + 'prec.csv'))
-    output_boxplot(prec_df, os.path.join(output_dir, filetag + 'precision_boxplot.png'),
+    output_boxplot(prec_df, os.path.join(output_dir, filetag + 'precision_boxplot.jpg'),
                    y_title='Precision')
 
     recall_df = pd.DataFrame(recall_dict)
     recall_df.describe().to_csv(os.path.join(output_dir, filetag + 'recall_means.csv'))
     recall_df.to_csv(os.path.join(output_dir, filetag + 'recall.csv'))
-    output_boxplot(recall_df, os.path.join(output_dir, filetag + 'recall_boxplot.png'),
+    output_boxplot(recall_df, os.path.join(output_dir, filetag + 'recall_boxplot.jpg'),
                    y_title='Recall')
 
     f1_df = pd.DataFrame(fone_dict)
     f1_df.describe().to_csv(os.path.join(output_dir, filetag + 'f1_means.csv'))
     f1_df.to_csv(os.path.join(output_dir, filetag + 'f1.csv'))
-    output_boxplot(f1_df, os.path.join(output_dir, filetag + 'f1_boxplot.png'),
+    output_boxplot(f1_df, os.path.join(output_dir, filetag + 'f1_boxplot.jpg'),
                    y_title='F1 Score')
 
     fbeta_df = pd.DataFrame(fbeta_dict)
     fbeta_df.describe().to_csv(os.path.join(output_dir, filetag + 'fb_means.csv'))
     fbeta_df.to_csv(os.path.join(output_dir, filetag + 'fb.csv'))
-    output_boxplot(fbeta_df, os.path.join(output_dir, filetag + 'fb_boxplot.png'),
+    output_boxplot(fbeta_df, os.path.join(output_dir, filetag + 'fb_boxplot.jpg'),
                    y_title='F0.5 Score')
 
     # Plot ROC Curves
@@ -353,7 +353,7 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     plt.xlabel('Recall')
     plt.ylabel('Precision')
     plt.legend(loc="lower right")
-    plt.savefig(os.path.join(output_dir, '_'.join([filetag, 'pr_curves.png'])))
+    plt.savefig(os.path.join(output_dir, '_'.join([filetag, 'pr_curves.jpg'])), dpi=400)
     plt.close()
     plt.cla()
     plt.clf()

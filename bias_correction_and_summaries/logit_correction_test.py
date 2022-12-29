@@ -77,7 +77,7 @@ def main():
             acc_df = pd.DataFrame(acc_dict)
             acc_df.describe().to_csv(os.path.join(bias_output_dir, 'logit_test', 'acc_means.csv'))
             acc_df.to_csv(os.path.join(bias_output_dir, 'logit_test', 'acc.csv'))
-            output_boxplot(acc_df, os.path.join(bias_output_dir, 'logit_test', 'accuracy_boxplot.png'),
+            output_boxplot(acc_df, os.path.join(bias_output_dir, 'logit_test', 'accuracy_boxplot.jpg'),
                            y_title='Model Accuracy')
 
             recall_dict = {}
@@ -87,7 +87,7 @@ def main():
             recall_df = pd.DataFrame(recall_dict)
             recall_df.describe().to_csv(os.path.join(bias_output_dir, 'logit_test', 'recall_means.csv'))
             recall_df.to_csv(os.path.join(bias_output_dir, 'logit_test', 'recall.csv'))
-            output_boxplot(recall_df, os.path.join(bias_output_dir, 'logit_test', 'recall_boxplot.png'),
+            output_boxplot(recall_df, os.path.join(bias_output_dir, 'logit_test', 'recall_boxplot.jpg'),
                            y_title='Model Recall')
 
             brie_dict = {}
@@ -97,7 +97,7 @@ def main():
             brie_df = pd.DataFrame(brie_dict)
             brie_df.describe().to_csv(os.path.join(bias_output_dir, 'logit_test', 'br_means.csv'))
             brie_df.to_csv(os.path.join(bias_output_dir, 'logit_test', 'br.csv'))
-            output_boxplot(brie_df, os.path.join(bias_output_dir, 'logit_test', 'br_boxplot.png'),
+            output_boxplot(brie_df, os.path.join(bias_output_dir, 'logit_test', 'br_boxplot.jpg'),
                            y_title='Model Brier Score')
 
 
