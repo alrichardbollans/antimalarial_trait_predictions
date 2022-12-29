@@ -105,7 +105,7 @@ class bnn_scores:
                              n_nodes=[10, 5],
                              use_class_weights=0,  # set to 1 to use class weights for unbalanced classes
                              actFun=bn.ActFun(fun="tanh"),
-                             use_bias_node=0,
+                             use_bias_node=-1,
                              # 0) no bias node, 1) bias in input layer, 2) bias in input and hidden layers, 3) bias in input/hidden/output
                              prior_f=1,  # 0) uniform, 1) normal, 2) Cauchy, 3) Laplace
                              p_scale=1,
@@ -115,8 +115,8 @@ class bnn_scores:
                              instance_weights=train_weights)
 
         mcmc = bn.MCMC(bnn_model,
-                       n_iteration=10000,  # set to a higher number of more iterations
-                       sampling_f=10,  # sampling frequency
+                       n_iteration=1000000,  # set to a higher number of more iterations
+                       sampling_f=1000,  # sampling frequency
                        adapt_f=0.3,  # use adaptive MCMC to target an acceptance rate between 0.3 and 0.6
                        adapt_fM=0.6
                        )
@@ -143,7 +143,7 @@ class bnn_scores:
                                      fname=test_dat['file_name'],
                                      post_summary_mode=0)
         post_prob_predictions = post_pr_test['post_prob_predictions']
-        print(post_pr_test['confusion_matrix'])
+
         y_pred = self.get_y_preds(post_prob_predictions)
         y_proba = post_prob_predictions[:, 1]
         self.y_reals.append(y_test)

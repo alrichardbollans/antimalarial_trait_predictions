@@ -74,8 +74,6 @@ def probabilities_of_selecting_active_species():
         os.path.join(_pa_output_path, 'psmeans.csv'))
 
 
-
-
 def main():
     unlabelled_distribution()
     probabilities_of_selecting_active_species()

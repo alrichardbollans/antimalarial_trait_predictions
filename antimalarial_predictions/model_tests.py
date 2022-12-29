@@ -8,10 +8,10 @@ from sklearn.svm import SVC
 from xgboost import XGBClassifier
 
 from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS, vars_without_target_to_use, \
-    logit_correction, vars_to_use_in_bias_analysis, \
-    all_features_to_target_encode
+    vars_to_use_in_bias_analysis, \
+    all_features_to_target_encode, WEIGHTED_LABELLED_DATA, WEIGHTED_UNLABELLED_DATA
 from general_preprocessing_and_testing import basic_data_prep, clf_scores, FeatureModel, \
-    do_basic_preprocessing, output_scores, get_fbeta_score, bnn_scores
+    do_basic_preprocessing, output_scores, bnn_scores
 
 _output_path = resource_filename(__name__, 'outputs')
 
@@ -81,8 +81,8 @@ def in_the_wild_test():
     _itw_dir = os.path.join(_output_path, 'in_the_wild')
     ### Data
     labelled_data = LABELLED_TRAITS.copy(deep=True)
-    labelled_weights, unlabelled_weights = logit_correction(LABELLED_TRAITS, UNLABELLED_TRAITS)
-    all_weights = labelled_weights['weight']
+    weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA)
+    all_weights = weighted_labelled_df['weight']
 
     X, y = basic_data_prep(labelled_data, traits_to_use=prediction_vars_to_use, dropna_rows=False)
     # Check indices are the same

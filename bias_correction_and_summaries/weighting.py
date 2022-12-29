@@ -9,7 +9,7 @@ from pkg_resources import resource_filename
 from sklearn.linear_model import LogisticRegression
 
 from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS, vars_without_target_to_use, \
-    all_features_to_target_encode, WEIGHTED_LABELLED_DATA, WEIGHTED_UNLABELLED_DATA
+    all_features_to_target_encode, WEIGHTED_LABELLED_DATA, WEIGHTED_UNLABELLED_DATA, bias_output_dir
 from general_preprocessing_and_testing import do_basic_preprocessing
 
 _temp_output_dir = resource_filename(__name__, 'temp_outputs')
@@ -166,6 +166,8 @@ def oversample_by_weight(trait_df: pd.DataFrame, unlabelled_pop_df: pd.DataFrame
 
 def main():
     selected_out, unlabelled_out = logit_correction(LABELLED_TRAITS, UNLABELLED_TRAITS)
+    selected_out.describe().to_csv(os.path.join(bias_output_dir, 'labelled_weight_summary.csv'))
+
     selected_out.to_csv(WEIGHTED_LABELLED_DATA)
     unlabelled_out.to_csv(WEIGHTED_UNLABELLED_DATA)
 
