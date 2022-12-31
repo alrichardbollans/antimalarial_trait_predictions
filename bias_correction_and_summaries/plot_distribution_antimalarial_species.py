@@ -43,7 +43,7 @@ def plot_number_species_in_regions(df: pd.DataFrame, output_path: str, title: st
     norm = plt.Normalize(min_val, max_val)
     print('plotting countries')
 
-    plt.figure(figsize=(40, 25))
+    plt.figure(figsize=(15, 9.375))
     # plt.xlim(-210, 210)
     # plt.ylim(-60, 70)
     # plt.xticks(fontsize=30)
@@ -216,7 +216,7 @@ def main():
     plot_labelled_data()
     plot_proportion_active()
     plot_all_data()
-    plot_malarial_regions()
+    # plot_malarial_regions()
 
 
 if __name__ == '__main__':

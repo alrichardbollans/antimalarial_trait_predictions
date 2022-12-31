@@ -27,6 +27,7 @@ def output_boxplot(df: pd.DataFrame, out_file: str, y_title: str):
     boxplot_df = pd.DataFrame(scores_w_model, columns=[y_title, 'Model'])
     import matplotlib.pyplot as plt
     import seaborn as sns
+    plt.rc('font', size=13)
     sns.boxplot(x='Model', y=y_title, data=boxplot_df)
     plt.tight_layout()
     plt.savefig(out_file, dpi=400)
@@ -325,7 +326,7 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     fbeta_df.to_csv(os.path.join(output_dir, filetag + 'fb.csv'))
     output_boxplot(fbeta_df, os.path.join(output_dir, filetag + 'fb_boxplot.jpg'),
                    y_title='F0.5 Score')
-
+    plt.rc('font', size=13)
     # Plot ROC Curves
     for model in models:
         if not model.feature_model:
@@ -347,7 +348,7 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
             curve_df = pd.DataFrame(
                 {'precision': list(precision), 'recall': list(recall), 'thresholds': list(thresholds) + [1]})
             curve_df.to_csv(os.path.join(output_dir, '_'.join([model.name, 'pr_curves.csv'])))
-    plt.rc('font', size=12)
+
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
     plt.xlabel('Recall')
@@ -357,23 +358,3 @@ def output_scores(models: List[clf_scores], output_dir: str, filetag: str):
     plt.close()
     plt.cla()
     plt.clf()
-
-
-def output_feature_importance(models: List[clf_scores], output_dir: str, filetag: str):
-    # TODO: Stitch all these together, get abs value for coefs and plot
-    dfs = []
-    for model in models:
-        acc_df = pd.DataFrame.from_dict(model.feature_importance, orient='index')
-        acc_df.columns = [filetag + model.name]
-        acc_df.to_csv(os.path.join(output_dir, filetag + model.name + '_feature_importance.csv'))
-        dfs.append(acc_df)
-
-# def plot_feature_imps(dfs, output_dir):
-#     # TODO: Separate into disc and continuous vars and also models, as values across models aren't comparable
-#     #  Not sure how useful this is due to stochastic nature of processes.
-#     all_df = pd.concat(dfs, axis=1)
-#     all_df.to_csv(os.path.join(output_dir, 'feature_importances.csv'))
-#     abs_df = all_df.abs()
-#     abs_df.plot.bar()
-#     plt.tight_layout()
-#     plt.show()
