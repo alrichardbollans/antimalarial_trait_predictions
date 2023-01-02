@@ -31,8 +31,10 @@ def unlabelled_distribution():
 
     weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA)
     all_weighted_data = pd.concat([weighted_labelled_df, weighted_unlabelled_df])
+    all_weighted_data[['P(s|x)']].describe().to_csv(os.path.join(_pa_output_path, 'all_data_ps_summary.csv'))
+    weighted_unlabelled_df[['P(s|x)']].describe().to_csv(
+        os.path.join(_pa_output_path, 'unlabelled_data_summary.csv'))
     sns.set(font_scale=1.2)
-    all_weighted_data[['P(s|x)']].describe().to_csv(os.path.join(_pa_output_path, 'summary.csv'))
     h = sns.histplot(all_weighted_data['P(s|x)'], binwidth=binwidth)
     h.set_xlim(0, 0.1)
     h.set_xticks(np.linspace(0, 0.1, 11))
@@ -71,7 +73,7 @@ def probabilities_of_selecting_active_species():
     pd.DataFrame(
         {'num': [actives['P(s|x)'].mean(), inactives['P(s|x)'].mean()]},
         index=['active', 'inactive']).to_csv(
-        os.path.join(_pa_output_path, 'psmeans.csv'))
+        os.path.join(_pa_output_path, 'ps_labelled_means.csv'))
 
 
 def main():
