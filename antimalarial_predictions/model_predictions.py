@@ -128,9 +128,7 @@ def compare_to_selection_probability():
     # surprises
     weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA)
 
-    all_weighted_data = pd.concat([weighted_labelled_df, weighted_unlabelled_df])
-
-    fifty_quantile = all_weighted_data.quantile()
+    fifty_quantile = weighted_unlabelled_df.quantile()
     value = fifty_quantile['P(s|x)']
     surprises = df_for_analysis[df_for_analysis['P(s|x)'] < value]
     surprises_rate = surprises[chosen_model + ' Prediction'].mean()
@@ -178,7 +176,7 @@ def compare_to_selection_probability():
 
 
 def main():
-    make_predictions()
+    # make_predictions()
     compare_to_selection_probability()
 
 
