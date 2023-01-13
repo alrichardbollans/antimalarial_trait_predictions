@@ -147,23 +147,6 @@ def logit_correction(trait_df: pd.DataFrame, unlabelled_pop_df: pd.DataFrame, im
     return selected_out, unlabelled_out
 
 
-def oversample_by_weight(trait_df: pd.DataFrame, unlabelled_pop_df: pd.DataFrame, method: str = 'logit'
-                         ) -> pd.DataFrame:
-    if method == 'logit':
-        weight_df, unlabelled_weight_df = logit_correction(trait_df, unlabelled_pop_df)
-    else:
-        raise ValueError
-
-    over_df = weight_df.loc[weight_df.index.repeat(weight_df['weight'])]
-
-    w_sum = weight_df['weight'].astype(int).sum()
-    if w_sum != len(over_df.index):
-        raise ValueError(f'{w_sum}:{len(over_df.index)}')
-
-    over_df = over_df.drop(columns=['weight'])
-    return over_df
-
-
 def main():
     selected_out, unlabelled_out = logit_correction(LABELLED_TRAITS, UNLABELLED_TRAITS)
     selected_out.describe().to_csv(os.path.join(bias_output_dir, 'labelled_weight_summary.csv'))

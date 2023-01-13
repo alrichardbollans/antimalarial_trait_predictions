@@ -1,100 +1,74 @@
 import os
 
+import numpy as np
 import pandas as pd
 
-from bias_correction_and_summaries import oversample_by_weight, LABELLED_TRAITS, bias_output_dir, \
-    UNLABELLED_TRAITS
+from bias_correction_and_summaries import LABELLED_TRAITS, bias_output_dir, \
+    WEIGHTED_LABELLED_DATA
 from import_trait_data import TARGET_COLUMN
 
 metric_output_dir = os.path.join(bias_output_dir, 'screening_comparison')
 
 
-def estimate_approach_accuracy(df: pd.DataFrame, feature1, feature2=None):
-    if feature2 is None:
-        true_positives = len(df[(df[feature1] == 1) & (df[TARGET_COLUMN] == 1)].index)
-        true_negatives = len(df[(df[feature1] == 0) & (df[TARGET_COLUMN] == 0)].index)
-    else:
-        true_positives = len(df[(df[feature1] == 1) & (df[feature2] == 1) & (df[TARGET_COLUMN] == 1)].index)
-        true_negatives = len(df[(df[feature1] == 0) & (df[feature2] == 0) & (df[TARGET_COLUMN] == 0)].index)
-
-    accuracy = float(true_positives + true_negatives) / len(df.index)
-    print(accuracy)
-    return accuracy
+def add_approach_result_column(df: pd.DataFrame, feature: str):
+    out_df = df.copy(deep=True)
+    out_df['result'] = np.where(out_df[feature] == out_df[TARGET_COLUMN], 1, 0)
+    out_df = out_df[[feature, TARGET_COLUMN, 'result', 'weight']]
+    return out_df
 
 
-def estimate_population_activity(df: pd.DataFrame):
-    num_active_samples = len(df[df[TARGET_COLUMN] == 1].index)
-    active_probability = float(num_active_samples) / len(df.index)
-    print(active_probability)
-    return active_probability
+def get_model_precisions():
+    weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA, index_col=0)
+    antimal_df = weighted_labelled_df[weighted_labelled_df['Antimalarial_Use'] == 1]
+    antimal_values = [
+        antimal_df[TARGET_COLUMN].mean(),
+        np.average(antimal_df[TARGET_COLUMN], weights=antimal_df['weight'])
+    ]
 
+    medicinal_df = weighted_labelled_df[weighted_labelled_df['Medicinal'] == 1]
+    medicinal_values = [
+        medicinal_df[TARGET_COLUMN].mean(),
+        np.average(medicinal_df[TARGET_COLUMN], weights=medicinal_df['weight'])
+    ]
 
-def get_accuracies(corrected_df: pd.DataFrame):
-    accuracies = []
-
-    print('Random Approach:')
-    accuracies.append(0.5)
-
-    print('Ethno Approach Acc:')
-    accuracies.append(estimate_approach_accuracy(corrected_df, 'Medicinal'))
-
-    print('Ethno(AntiMal) Approach Acc:')
-    accuracies.append(estimate_approach_accuracy(corrected_df, 'Antimalarial_Use'))
-
-    return accuracies
-
-
-def get_precisions(corrected_df: pd.DataFrame):
-    precisions = []
-
-    print('Random Approach:')
-    precisions.append(estimate_population_activity(corrected_df))
-
-    print('Ethno Approach Precision:')
-    ethno_df = corrected_df[corrected_df['Medicinal'] == 1]
-    precisions.append(estimate_population_activity(ethno_df))
-
-    print('Ethno(AntiMal) Approach Precision:')
-    antimal_df = corrected_df[corrected_df['Antimalarial_Use'] == 1]
-    precisions.append(estimate_population_activity(antimal_df))
-
-    return precisions
-
-
-def get_model_precisions(logit_corrected_df):
-    approaches = ['Random', 'Ethno (G)', 'Ethno (M)']
-    logit_corrected_precisions = get_precisions(logit_corrected_df)
-
-    unadjusted_precisions = get_precisions(LABELLED_TRAITS)
-
+    total_corrected_mean = np.average(weighted_labelled_df[TARGET_COLUMN],
+                                      weights=weighted_labelled_df['weight'])
+    all_values = [weighted_labelled_df[TARGET_COLUMN].mean(),
+                  total_corrected_mean
+                  ]
     out = pd.DataFrame(
-        {'Uncorrected': unadjusted_precisions,  # 'Ratio Corrected': ratio_corrected_precisions,
-         'Logit Corrected': logit_corrected_precisions},
-        index=approaches)
+        {'Random': all_values, 'Ethno (G)': medicinal_values, 'Ethno (M)': antimal_values},
+        index=['Uncorrected', 'Logit Corrected'])
+    out = out.transpose()
     out.to_csv(os.path.join(metric_output_dir, 'precisions.csv'))
 
 
-def get_model_accuracies(logit_corrected_df):
-    approaches = ['Random', 'Ethno (G)', 'Ethno (M)']
+def get_model_accuracies():
+    weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA, index_col=0)
+    antimal_df = add_approach_result_column(weighted_labelled_df, 'Antimalarial_Use')
+    antimal_values = [
+        antimal_df['result'].mean(),
+        np.average(antimal_df['result'], weights=antimal_df['weight'])
+    ]
 
-    logit_corrected_accs = get_accuracies(logit_corrected_df)
-
-    unadjusted_accs = get_accuracies(LABELLED_TRAITS)
+    medicinal_df = add_approach_result_column(weighted_labelled_df, 'Medicinal')
+    medicinal_values = [
+        medicinal_df['result'].mean(),
+        np.average(medicinal_df['result'], weights=medicinal_df['weight'])
+    ]
 
     out = pd.DataFrame(
-        {'Uncorrected': unadjusted_accs,
-         'Logit Corrected': logit_corrected_accs},
-        index=approaches)
+        {'Random': [0.5, 0.5], 'Ethno (G)': medicinal_values, 'Ethno (M)': antimal_values},
+        index=['Uncorrected', 'Logit Corrected'])
+    out = out.transpose()
     out.to_csv(os.path.join(metric_output_dir, 'accuracies.csv'))
 
 
 def main():
     # Estimate model performance in all regions
-    logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS)
-    get_model_precisions(logit_corrected_df)
-    get_model_accuracies(logit_corrected_df)
+    get_model_precisions()
+    get_model_accuracies()
 
 
 if __name__ == '__main__':
-
     main()
