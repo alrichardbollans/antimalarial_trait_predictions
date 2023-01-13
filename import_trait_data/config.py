@@ -15,15 +15,10 @@ NAME_COLUMNS = [
 
 COLUMNS_TO_DROP = [
     "Ref_Alks",
-
-
-
     "Ref_H_Mal",
     "History_Fever",
     "Ref_H_Fever",
-
     "Ref_Activity",
-
     "Name",
     "Species"
 
@@ -50,8 +45,9 @@ FAMILIES_OF_INTEREST = [
 ]
 
 # Variables
-TAXONOMIC_VARS = ['Richness']
+TAXONOMIC_VARS = ['Family', 'Genus']
 ENVIRON_VARS = all_climate_names
+ENVIRON_VARS.remove('soil_soc')
 
 SOIL_VARS = [c for c in ENVIRON_VARS if 'soil' in c] + ['soil_water_cap']
 
@@ -64,7 +60,7 @@ HABIT_COLS = ["herb",
 
 COMPOUND_PRESENCE_VARS = ["Alkaloids"]
 
-GENERA_VARS = ["Richness", "Spines",
+GENERA_VARS = ["Spines",
                "Emergence",
                "Hairs"] + HABIT_COLS
 
@@ -78,7 +74,8 @@ BINARY_VARS = ["In_Malarial_Region", "Common_Name", "Poisonous", "Medicinal", "W
 
 DISCRETE_VARS = BINARY_VARS
 NON_NUMERIC_TRAITS = ['Genus', 'Family', 'kg_mode', 'kg_all', 'native_tdwg3_codes']
-CONTINUOUS_VARS = ['Richness'] + [c for c in ENVIRON_VARS if (c not in DISCRETE_VARS and c not in NON_NUMERIC_TRAITS)]
+CONTINUOUS_VARS = [c for c in ENVIRON_VARS if
+                   (c not in DISCRETE_VARS and c not in NON_NUMERIC_TRAITS)]
 
 NUMERIC_TRAITS = DISCRETE_VARS + CONTINUOUS_VARS
 TRAITS = NUMERIC_TRAITS + NON_NUMERIC_TRAITS

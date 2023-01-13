@@ -39,7 +39,7 @@ def summarise_traits():
 def plot_data_means():
     discrete_traits = [c for c in vars_to_use_in_bias_analysis if c in DISCRETE_VARS]
     plot_means_all_vs_labelled(ALL_TRAITS, discrete_traits,
-                               os.path.join(quantbias_output_dir, 'discrete_means.jpg'), minmaxscale=True)
+                               os.path.join(quantbias_output_dir, 'discrete_means.jpg'), minmaxscale=False)
 
     cont_traits = [c for c in vars_to_use_in_bias_analysis if c in CONTINUOUS_VARS]
     plot_means_all_vs_labelled(ALL_TRAITS, cont_traits,

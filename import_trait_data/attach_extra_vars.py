@@ -401,18 +401,6 @@ def main():
 
     attach_new_var(updated_trait_df, 'Hairs', [hairy_output_csv, logan_hairy_output_csv], level='genera')
 
-    species_df = updated_trait_df[updated_trait_df['Accepted_Rank'] == 'Species']
-    # Number of species in each genus (scaled by max)
-    updated_trait_df['Richness'] = updated_trait_df.apply(
-        lambda x: len(
-            species_df[species_df['Genus'] == x.Genus]),
-        axis=1)
-    richest = updated_trait_df['Richness'].max()
-    print(
-        f'Richest genus: {updated_trait_df[updated_trait_df["Richness"] == 1]["Genus"].unique()}:{richest} species')
-    # Scale richness:
-    updated_trait_df['Richness'] = updated_trait_df['Richness'].divide(richest)
-
     print('Modifying features')
     modify_related_features(updated_trait_df)
 

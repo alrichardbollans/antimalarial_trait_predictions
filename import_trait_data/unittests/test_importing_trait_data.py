@@ -147,7 +147,7 @@ class Test(unittest.TestCase):
     def test_climate_limits(self):
         bounds = {'kg_mode': [0, 30], 'bio1': [-20, 35],
                   'brkl_elevation': [-500, 6500], 'elevation': [-500, 6500],
-                  'soil_ocs': [0, 212], 'soil_ph': [0, 92], 'soil_soc': [0, 4471],
+                  'soil_ocs': [0, 212], 'soil_ph': [0, 92],
                   'latitude': [-90, 85], 'longitude': [-180, 180],
                   'soil_nitrogen': [0, 2500]}
 
@@ -222,7 +222,7 @@ class Test(unittest.TestCase):
         aspi_dict = {TARGET_COLUMN: 1, 'Genus': 'Aspidosperma', 'Medicinal': 1, 'Poisonous': 1,
                      'Alkaloids': 1, 'Antimalarial_Use': 1, 'AntiBac_Metabolites': np.nan,
                      'Family': 'Apocynaceae', 'Spines': 0, 'Coloured_Latex': 1, 'Left_Corolla': 1, 'habit': 'tree',
-                     'Richness': 0.047648136835675, 'Steroids': np.nan, 'Cardenolides': np.nan,
+                     'Steroids': np.nan, 'Cardenolides': np.nan,
                      'native_tdwg3_codes': "['BOL', 'BZE', 'BZL', 'BZC', 'CLM', 'GUY', 'PER', 'SUR', 'VEN', 'VNA']",
                      'alk_mia': 1, 'alk_indole': 1, 'alk_pyrrole': 0}
         test_dict('Aspidosperma parvifolium', aspi_dict)
@@ -235,7 +235,7 @@ class Test(unittest.TestCase):
         vomica_dict = {TARGET_COLUMN: 0, 'Genus': 'Strychnos', 'Medicinal': 1, 'Poisonous': 1,
                        'Alkaloids': 1, 'Antimalarial_Use': 1, 'AntiBac_Metabolites': np.nan,
                        'Family': 'Loganiaceae', 'Spines': 1, 'habit': 'liana',
-                       'Richness': 0.1246182040317654, 'Steroids': 1, 'Cardenolides': np.nan,
+                       'Steroids': 1, 'Cardenolides': np.nan,
                        'native_tdwg3_codes': "['BAN', 'CBD', 'IND', 'LAO', 'MLY', 'MYA', 'SRL', 'THA', 'VIE']"}
         test_dict('Strychnos nux-vomica', vomica_dict)
 
@@ -244,7 +244,7 @@ class Test(unittest.TestCase):
                      'Family': 'Rubiaceae', 'Accepted_ID': '744422-1', 'Accepted_Rank': 'Species',
                      'Accepted_Species': 'Bertiera borbonica', 'Wiki_Page': 1, 'Alkaloids': np.nan, 'Spines': np.nan,
                      'Coloured_Latex': 0, 'Left_Corolla': np.nan,
-                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree', 'Richness': 0.0348197923029932,
+                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree',
                      'native_tdwg3_codes': "['REU']"}
         test_dict('Bertiera borbonica', bert_dict)
 
@@ -254,13 +254,13 @@ class Test(unittest.TestCase):
         arac_dict = {'Genus': 'Arachnothryx', 'Alkaloids': 0, 'Medicinal': 0, 'Poisonous': np.nan,
                      'Antimalarial_Use': 0, 'Family': 'Rubiaceae', TARGET_COLUMN: np.nan,
                      'Spines': np.nan, 'Coloured_Latex': 0, 'Left_Corolla': np.nan,
-                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree', 'Richness': 0.0641417226634086}
+                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree'}
         test_dict('Arachnothryx chiriquiana', arac_dict)
 
         cara_dict = {'Genus': 'Carapichea', 'Alkaloids': 1, 'Medicinal': 0, 'Poisonous': 0,
                      'Antimalarial_Use': 0, 'Family': 'Rubiaceae', TARGET_COLUMN: 1, 'Spines': np.nan,
                      'Coloured_Latex': 0, 'Left_Corolla': np.nan,
-                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree/subshrub', 'Richness': 0.0146609651802076}
+                     'AntiBac_Metabolites': np.nan, 'habit': 'shrub/tree/subshrub'}
         test_dict('Carapichea affinis', cara_dict)
 
         hima_dict = {'Genus': 'Himatanthus', 'Medicinal': 1, 'Poisonous': 0,

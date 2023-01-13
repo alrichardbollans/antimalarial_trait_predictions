@@ -123,6 +123,14 @@ def main():
         os.path.join(IMPORT_OUTPUT_DIR, 'unlabelled trait summary.csv'))
     all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'all trait summary.csv'))
 
+    log_all_taxa = all_taxa[all_taxa['Family']=='Loganiaceae']
+    log_all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'loganiaceae trait summary.csv'))
+
+    log_all_taxa = all_taxa[all_taxa['Family']=='Apocynaceae']
+    log_all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'Apocynaceae trait summary.csv'))
+
+    log_all_taxa = all_taxa[all_taxa['Family']=='Rubiaceae']
+    log_all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'Rubiaceae trait summary.csv'))
 
 if __name__ == '__main__':
     main()
