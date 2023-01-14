@@ -4,10 +4,11 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-
 from import_trait_data import TARGET_COLUMN, BINARY_VARS, DISCRETE_VARS, TRAITS_WITH_NANS
+
 apriori_features_to_target_encode = ['Genus', 'Family']
 all_features_to_target_encode = apriori_features_to_target_encode + ['kg_mode']
+
 
 def basic_data_prep(train_data: pd.DataFrame, traits_to_use: List[str], dropna_cols=False, dropna_rows=False,
                     ):
@@ -50,8 +51,7 @@ def get_semi_supervised_data(X_train: pd.DataFrame, y_train: pd.DataFrame,
     return all_data, all_y
 
 
-def knn_imputer(train_data: pd.DataFrame, test_data: pd.DataFrame, unlabelled: pd.DataFrame = None,
-                vars_to_rediscretise=None):
+def knn_imputer(train_data: pd.DataFrame, test_data: pd.DataFrame, unlabelled: pd.DataFrame = None):
     from sklearn.impute import KNNImputer
     imp = KNNImputer(missing_values=np.nan)
 
@@ -65,12 +65,6 @@ def knn_imputer(train_data: pd.DataFrame, test_data: pd.DataFrame, unlabelled: p
 
     out = imp.transform(test_data)
     out_df = pd.DataFrame(out, columns=test_data.columns, index=test_data.index)
-
-    # Set discrete vars to ints (note some variables that are usually discrete may be target encoded etc..)
-    if vars_to_rediscretise is not None:
-        for c in vars_to_rediscretise:
-            if c in out_df.columns:
-                out_df[c] = out_df[c].astype(int)
 
     return out_df
 
@@ -95,10 +89,8 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
         y_train = y
         y_test = y
 
-
     if (train_index is not None and test_index is None) or (test_index is not None and train_index is None):
         raise ValueError
-
 
     # Target encode categorical features
     # Defaults to mean when transforming unknown values
@@ -163,27 +155,8 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
         variance_unlabelled = encoded_unlabelled
 
     # Impute missing data values
-    if impute:
-        vars_to_rediscretise = [x for x in DISCRETE_VARS if x not in all_features_to_target_encode]
-        imputed_X_train = knn_imputer(variance_X_train, variance_X_train, unlabelled=variance_unlabelled,
-                                      vars_to_rediscretise=vars_to_rediscretise)
-        imputed_X_test = knn_imputer(variance_X_train, variance_X_test, unlabelled=variance_unlabelled,
-                                     vars_to_rediscretise=vars_to_rediscretise)
-
-        if unlabelled_data is not None:
-            imputed_unlabelled = knn_imputer(variance_X_train, variance_unlabelled,
-                                             unlabelled=variance_unlabelled,
-                                             vars_to_rediscretise=vars_to_rediscretise)
-        else:
-            imputed_unlabelled = variance_unlabelled
-
-    else:
-        imputed_X_train = variance_X_train
-        imputed_X_test = variance_X_test
-        imputed_unlabelled = variance_unlabelled
-
     if scale:
-        cols_to_scale = [x for x in imputed_X_train.columns if x != TARGET_COLUMN]
+        cols_to_scale = [x for x in variance_X_train.columns if x != TARGET_COLUMN]
         # Scale data using unlabelled data.
         standard_scaler = ColumnTransformer(
             transformers=[
@@ -193,30 +166,47 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
             remainder='passthrough', verbose_feature_names_out=False
 
         )
-        all_selected_data = pd.concat([imputed_X_train, imputed_unlabelled])
+        all_selected_data = pd.concat([variance_X_train, variance_unlabelled])
         standard_scaler.fit(all_selected_data)
-        X_train_scaled = pd.DataFrame(standard_scaler.transform(imputed_X_train),
-                                      index=imputed_X_train.index,
+        X_train_scaled = pd.DataFrame(standard_scaler.transform(variance_X_train),
+                                      index=variance_X_train.index,
                                       columns=standard_scaler.get_feature_names_out())
-        X_test_scaled = pd.DataFrame(standard_scaler.transform(imputed_X_test),
-                                     index=imputed_X_test.index,
+        X_test_scaled = pd.DataFrame(standard_scaler.transform(variance_X_test),
+                                     index=variance_X_test.index,
                                      columns=standard_scaler.get_feature_names_out())
 
         if unlabelled_data is not None:
-            unlabelled_scaled = pd.DataFrame(standard_scaler.transform(imputed_unlabelled),
-                                             index=imputed_unlabelled.index,
+            unlabelled_scaled = pd.DataFrame(standard_scaler.transform(variance_unlabelled),
+                                             index=variance_unlabelled.index,
                                              columns=standard_scaler.get_feature_names_out())
         else:
-            unlabelled_scaled = imputed_unlabelled
-
-        pd.testing.assert_index_equal(X_train.index, X_train_scaled.index)
-        pd.testing.assert_index_equal(X_test.index, X_test_scaled.index)
-        if unlabelled_data is not None:
-            pd.testing.assert_index_equal(unlabelled_data.index, unlabelled_scaled.index)
-        return X_train_scaled, X_test_scaled, unlabelled_scaled
+            unlabelled_scaled = variance_unlabelled
     else:
+        X_train_scaled = variance_X_train
+        X_test_scaled = variance_X_test
+        unlabelled_scaled = variance_unlabelled
+
+    if impute:
+        if not scale:
+            raise ValueError('Better to scale before imputing')
+
+        imputed_X_train = knn_imputer(X_train_scaled, X_train_scaled, unlabelled=unlabelled_scaled)
+        imputed_X_test = knn_imputer(X_train_scaled, X_test_scaled, unlabelled=unlabelled_scaled)
+
+        if unlabelled_data is not None:
+            imputed_unlabelled = knn_imputer(X_train_scaled, unlabelled_scaled,
+                                             unlabelled=unlabelled_scaled)
+        else:
+            imputed_unlabelled = unlabelled_scaled
+
         pd.testing.assert_index_equal(X_train.index, imputed_X_train.index)
         pd.testing.assert_index_equal(X_test.index, imputed_X_test.index)
         if unlabelled_data is not None:
             pd.testing.assert_index_equal(unlabelled_data.index, imputed_unlabelled.index)
         return imputed_X_train, imputed_X_test, imputed_unlabelled
+    else:
+        pd.testing.assert_index_equal(X_train.index, X_train_scaled.index)
+        pd.testing.assert_index_equal(X_test.index, X_test_scaled.index)
+        if unlabelled_data is not None:
+            pd.testing.assert_index_equal(unlabelled_data.index, unlabelled_scaled.index)
+        return X_train_scaled, X_test_scaled, unlabelled_scaled
