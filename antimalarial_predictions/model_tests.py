@@ -9,7 +9,7 @@ from xgboost import XGBClassifier
 
 from bias_correction_and_summaries import LABELLED_TRAITS, UNLABELLED_TRAITS, vars_without_target_to_use, \
     vars_to_use_in_bias_analysis, \
-    all_features_to_target_encode, WEIGHTED_LABELLED_DATA, WEIGHTED_UNLABELLED_DATA
+    all_features_to_target_encode, WEIGHTED_LABELLED_DATA
 from general_preprocessing_and_testing import basic_data_prep, clf_scores, FeatureModel, \
     do_basic_preprocessing, output_scores, bnn_scores
 
@@ -81,7 +81,7 @@ def in_the_wild_test():
     _itw_dir = os.path.join(_output_path, 'in_the_wild')
     ### Data
     labelled_data = LABELLED_TRAITS.copy(deep=True)
-    weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA)
+    weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA, index_col=0)
     all_weights = weighted_labelled_df['weight']
 
     X, y = basic_data_prep(labelled_data, traits_to_use=prediction_vars_to_use, dropna_rows=False)
@@ -156,6 +156,7 @@ def main():
     # Write variables used
     with open(os.path.join(_output_path, 'variable_docs.txt'), 'w') as the_file:
         the_file.write(f'vars_to_use_in_bias_analysis:{vars_to_use_in_bias_analysis}\n')
+        the_file.write(f'number of vars:{len(vars_to_use_in_bias_analysis)}\n')
         the_file.write(f'prediction_vars_to_use:{prediction_vars_to_use}\n')
         the_file.write(f'number of prediction vars:{len(prediction_vars_to_use)}\n')
         the_file.write(

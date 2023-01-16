@@ -116,8 +116,8 @@ class bnn_scores:
                              instance_weights=train_weights)
 
         mcmc = bn.MCMC(bnn_model,
-                       n_iteration=1000000,  # set to a higher number of more iterations
-                       sampling_f=1000,  # sampling frequency
+                       n_iteration=100000,  # set to a higher number of more iterations
+                       sampling_f=100,  # sampling frequency
                        adapt_f=0.3,  # use adaptive MCMC to target an acceptance rate between 0.3 and 0.6
                        adapt_fM=0.6
                        )

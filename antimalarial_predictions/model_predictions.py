@@ -59,47 +59,6 @@ def make_predictions():
     unlabelled_data.to_csv(_unlabelled_output_csv)
 
 
-# def mean_predicted_activity(estimated_precision):
-#     logit_corrected_df = oversample_by_weight(LABELLED_TRAITS, UNLABELLED_TRAITS)
-#     unlabelled_predictions = pd.read_csv(_unlabelled_output_csv)
-#     unlabelled_predictions[TARGET_COLUMN] = unlabelled_predictions[chosen_model+' Prediction']
-#     unlabelled_predictions = unlabelled_predictions[['Family', TARGET_COLUMN]]
-#     all_data = pd.concat([LABELLED_TRAITS[['Family', TARGET_COLUMN]], unlabelled_predictions])
-#
-#     apoc_family_values = [
-#         LABELLED_TRAITS[LABELLED_TRAITS['Family'] == 'Apocynaceae'][
-#             TARGET_COLUMN].mean(),
-#         logit_corrected_df[logit_corrected_df['Family'] == 'Apocynaceae'][TARGET_COLUMN].mean(),
-#         all_data[all_data['Family'] == 'Apocynaceae'][
-#             TARGET_COLUMN].mean()
-#     ]
-#     rub_family_values = [
-#         LABELLED_TRAITS[LABELLED_TRAITS['Family'] == 'Rubiaceae'][
-#             TARGET_COLUMN].mean(),
-#         logit_corrected_df[logit_corrected_df['Family'] == 'Rubiaceae'][TARGET_COLUMN].mean(),
-#         all_data[all_data['Family'] == 'Rubiaceae'][
-#             TARGET_COLUMN].mean()
-#     ]
-#     logan_family_values = [
-#         LABELLED_TRAITS[LABELLED_TRAITS['Family'] == 'Loganiaceae'][
-#             TARGET_COLUMN].mean(),
-#         logit_corrected_df[logit_corrected_df['Family'] == 'Loganiaceae'][TARGET_COLUMN].mean(),
-#         all_data[all_data['Family'] == 'Loganiaceae'][
-#             TARGET_COLUMN].mean()
-#     ]
-#
-#     all_family_values = [LABELLED_TRAITS[TARGET_COLUMN].mean(),
-#                          logit_corrected_df[TARGET_COLUMN].mean(), all_data[TARGET_COLUMN].mean()
-#                          ]
-#     out = pd.DataFrame(
-#         {'Apocynaceae': apoc_family_values, 'Loganiaceae': logan_family_values,
-#          'Rubiaceae': rub_family_values,
-#          'All': all_family_values},
-#         index=['Uncorrected', 'Logit Corrected', 'Predictions'])
-#     out = out.transpose()
-#     out.to_csv(os.path.join(_predictions_output_dir, 'corrected_activities.csv'))
-
-
 def compare_to_selection_probability():
     weighted_unlabelled_df = pd.read_csv(WEIGHTED_UNLABELLED_DATA)
     unlabelled_predictions = pd.read_csv(_unlabelled_output_csv)
@@ -108,22 +67,6 @@ def compare_to_selection_probability():
         ['Accepted_Name', chosen_model + ' Probability Estimate', chosen_model + ' Prediction']]
 
     df_for_analysis = pd.merge(unlabelled_predictions, weighted_unlabelled_df, on='Accepted_Name')
-    # df_for_analysis.to_csv(os.path.join(_predictions_output_dir, 'unlabelled_predictions_with_ps.csv'))
-    # sns.set(font_scale=1.2)
-    # sns.scatterplot(df_for_analysis, x=chosen_model+ ' Probability Estimate', y='P(s|x)')
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(_predictions_output_dir, 'unlabelled_prediction_vs_ps.jpg'), dpi=400)
-    # plt.close()
-    # plt.cla()
-    # plt.clf()
-    #
-    # sns.set(font_scale=1.2)
-    # sns.scatterplot(df_for_analysis, x='P(s|x)', y=chosen_model+ ' Probability Estimate')
-    # plt.tight_layout()
-    # plt.savefig(os.path.join(_predictions_output_dir, 'unlabelled_ps_vs_prediction.jpg'), dpi=400)
-    # plt.close()
-    # plt.cla()
-    # plt.clf()
 
     # surprises
     weighted_labelled_df = pd.read_csv(WEIGHTED_LABELLED_DATA)
@@ -159,24 +102,10 @@ def compare_to_selection_probability():
         os.path.join(_predictions_output_dir, 'surprises.csv'))
 
 
-# def wilson_score_interval(precision, z=1.96, N=100):
-#     # estimated precision is given in CV
-#     # Say we predict 1000 active species, in worst case precision is lowerlim and so num active species is
-#     #  1000 * lowerlim
-#     adjunct = (float(z) * math.sqrt(float(precision * (1 - precision)) / N))
-#     lower_lim = precision - adjunct
-#     upper_lim = precision + adjunct
-#
-#     newwy = ((precision + z * z / (2 * N) - z * math.sqrt(
-#         (precision * (1 - precision) + z * z / (4 * N)) / N)) / (1 + z * z / N))
-#
-#     new_center = (1 / (1 + (z * z / N))) * (precision + ())
-#
-#     return lower_lim, upper_lim, adjunct, newwy
 
 
 def main():
-    # make_predictions()
+    make_predictions()
     compare_to_selection_probability()
 
 
