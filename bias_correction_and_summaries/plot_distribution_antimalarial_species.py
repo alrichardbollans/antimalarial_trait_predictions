@@ -15,7 +15,7 @@ _dist_output_dir = os.path.join(quantbias_output_dir, 'geography')
 
 def OHE_dists(df: pd.DataFrame) -> pd.DataFrame:
     # OHE alks
-
+    df = df.reset_index(drop=True)
     def reformat_dist_col(given_val):
         return ast.literal_eval(given_val)
 
@@ -216,7 +216,7 @@ def main():
     plot_labelled_data()
     plot_proportion_active()
     plot_all_data()
-    # plot_malarial_regions()
+    plot_malarial_regions()
 
 
 if __name__ == '__main__':

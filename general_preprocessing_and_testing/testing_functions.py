@@ -8,7 +8,7 @@ from sklearn.metrics import accuracy_score, precision_score, f1_score, fbeta_sco
     average_precision_score, recall_score
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
-import np_bnn as bn
+
 
 beta = 0.5
 
@@ -95,6 +95,7 @@ class bnn_scores:
     def add_cv_scores(self, transformed_train_data, y_train, transformed_test_data, y_test,
                       train_weights=None,
                       test_weights=None):
+        import np_bnn as bn
         rseed = 1234
         train_dat = bn.get_data(transformed_train_data, y_train,
                                 seed=rseed,

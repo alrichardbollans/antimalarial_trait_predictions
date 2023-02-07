@@ -92,6 +92,7 @@ def append_wcvp_taxa_to_trait_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def encode_habits(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.reset_index(drop=True)
     # OHE habits
     def convert_habits_to_lists(hab: str) -> List[str]:
 
