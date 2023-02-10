@@ -8,7 +8,7 @@ from pkg_resources import resource_filename
 
 from bias_correction_and_summaries import ALL_TRAITS, LABELLED_TRAITS, \
     vars_to_use_in_bias_analysis, WEIGHTED_LABELLED_DATA
-from import_trait_data import CONTINUOUS_VARS, DISCRETE_VARS
+from import_trait_data import CONTINUOUS_VARS, DISCRETE_VARS, tidy_var_names
 
 _output_path = resource_filename(__name__, 'outputs')
 
@@ -62,7 +62,7 @@ def plot_corrected_means(vars_to_compare: List[str], out_filename: str, scale=Tr
             label='Corrected Data')
     plt.bar(X_axis + 1.5 * width, all_means, width=width, edgecolor='black', label='Underlying Pop.')
 
-    plt.xticks(X_axis + width / 2, labelled_traits.describe().columns.tolist(), rotation=65)
+    plt.xticks(X_axis + width / 2, tidy_var_names(labelled_traits.describe().columns.tolist()), rotation=65)
     plt.legend()
     plt.xlabel('Trait')
     plt.ylabel(ylab)

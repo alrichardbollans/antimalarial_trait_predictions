@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from pkg_resources import resource_filename
 
 from bias_correction_and_summaries import vars_to_use_in_bias_analysis, ALL_TRAITS
-from import_trait_data import TARGET_COLUMN, BINARY_VARS, HABIT_COLS
+from import_trait_data import TARGET_COLUMN, BINARY_VARS, HABIT_COLS, tidy_var_names
 
 _output_path = resource_filename(__name__, 'outputs')
 
@@ -43,13 +43,15 @@ def make_cooccur_df(df: pd.DataFrame, vars: List[str]):
     var1_list = []
     var2_list = []
     values = []
+
     for p1 in vars + ['All Species']:
         for p2 in vars:
             var1_list.append(p1)
             var2_list.append(p2)
             values.append(get_cooccur_ratio_for_vars(df, p1, p2))
 
-    out_data = pd.DataFrame({'Var1': var1_list, 'Var2': var2_list, 'Values': values})
+    out_data = pd.DataFrame(
+        {'Var1': tidy_var_names(var1_list), 'Var2': tidy_var_names(var2_list), 'Values': values})
 
     return out_data
 

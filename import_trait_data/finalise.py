@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from typing import List
 
 from import_trait_data import ACCEPTED_NAME_COLUMN, TARGET_COLUMN, COLUMNS_TO_DROP, NAME_COLUMNS, \
     TEMP_ALL_TRAITS_CSV, \
@@ -75,6 +76,11 @@ def get_genus_species_list(lab_df: pd.DataFrame, unlab_df: pd.DataFrame):
         return dict_list
 
 
+def tidy_var_names(names:List[str]):
+    ### For some outputs, clean list of given names
+    return [c.replace('_', ' ') for c in names]
+
+
 def standardise_output(df: pd.DataFrame, out_csv: str = None):
     df = remove_samples_with_no_data(df)
     replace_nans_with_zeros(df)
@@ -83,6 +89,7 @@ def standardise_output(df: pd.DataFrame, out_csv: str = None):
             [c for c in df if
              (c not in [TARGET_COLUMN] and c not in NAME_COLUMNS and c not in TRAITS_TO_DROP_AFTER_IMPORT)]
             + [TARGET_COLUMN]]
+
     if out_csv is not None:
         df.to_csv(out_csv)
 
@@ -117,20 +124,20 @@ def main():
     unlabelled_taxa = all_taxa[all_taxa[TARGET_COLUMN].isna()]
     unlabelled_taxa.to_csv(IMPORTED_UNLABELLED_TRAIT_CSV)
 
-
     labelled_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'labelled trait summary.csv'))
     unlabelled_taxa.describe().to_csv(
         os.path.join(IMPORT_OUTPUT_DIR, 'unlabelled trait summary.csv'))
     all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'all trait summary.csv'))
 
-    log_all_taxa = all_taxa[all_taxa['Family']=='Loganiaceae']
+    log_all_taxa = all_taxa[all_taxa['Family'] == 'Loganiaceae']
     log_all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'loganiaceae trait summary.csv'))
 
-    log_all_taxa = all_taxa[all_taxa['Family']=='Apocynaceae']
+    log_all_taxa = all_taxa[all_taxa['Family'] == 'Apocynaceae']
     log_all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'Apocynaceae trait summary.csv'))
 
-    log_all_taxa = all_taxa[all_taxa['Family']=='Rubiaceae']
+    log_all_taxa = all_taxa[all_taxa['Family'] == 'Rubiaceae']
     log_all_taxa.describe().to_csv(os.path.join(IMPORT_OUTPUT_DIR, 'Rubiaceae trait summary.csv'))
+
 
 if __name__ == '__main__':
     main()
