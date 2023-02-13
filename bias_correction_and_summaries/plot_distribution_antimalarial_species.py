@@ -2,8 +2,9 @@ import ast
 import os
 
 import pandas as pd
-from getting_malarial_regions import get_tdwg3_codes, plot_countries
+from getting_malarial_regions import get_tdwg3_codes
 from pkg_resources import resource_filename
+from typing import List
 
 from bias_correction_and_summaries import quantbias_output_dir
 from import_trait_data import IMPORTED_TRAIT_CSV, TARGET_COLUMN
@@ -44,15 +45,11 @@ def plot_number_species_in_regions(df: pd.DataFrame, output_path: str, title: st
     print('plotting countries')
 
     plt.figure(figsize=(15, 9.375))
-    # plt.xlim(-210, 210)
-    # plt.ylim(-60, 70)
-    # plt.xticks(fontsize=30)
-    # plt.yticks(fontsize=30)
     if title is not None:
         plt.title(title, fontsize=40)
-    ax = plt.axes(projection=ccrs.PlateCarree())
+    ax = plt.axes(projection=ccrs.Mollweide())
     ax.coastlines(resolution='10m')
-    ax.add_feature(cfeature.BORDERS, linewidth=5)
+    ax.add_feature(cfeature.BORDERS, linewidth=2)
 
     cmap = mpl.cm.get_cmap('coolwarm')
     for country in tdwg3_shp.records():
@@ -205,9 +202,56 @@ def plot_proportion_active():
                                                 'proportion_active_gt2lab_species_per_region.jpg'))
 
 
+def plot_countries(tdwg3_region_codes: List[str], output_path: str):
+    import matplotlib.pyplot as plt
+    import cartopy.crs as ccrs
+    import cartopy.feature as cfeature
+    import cartopy.io.shapereader as shpreader
+
+    tdwg3_shp = shpreader.Reader(
+        os.path.join(_inputs_path, 'wgsrpd-master', 'level3', 'level3.shp'))
+
+    print('plotting countries')
+
+    plt.figure(figsize=(15, 9.375))
+    ax = plt.axes(projection=ccrs.Mollweide())
+    ax.coastlines(resolution='10m')
+    ax.add_feature(cfeature.BORDERS, linewidth=2)
+    for country in tdwg3_shp.records():
+        tdwg_code = country.attributes['LEVEL3_COD']
+        if tdwg_code in tdwg3_region_codes:
+
+            # print(country.attributes['name_long'], next(earth_colors))
+            ax.add_geometries([country.geometry], ccrs.PlateCarree(),
+                              facecolor='orange',
+                              label=tdwg_code)
+
+            x = country.geometry.centroid.x
+            y = country.geometry.centroid.y
+
+            # ax.text(x, y, tdwg_code, color='black', size=10, ha='center', va='center',
+            #         transform=ccrs.PlateCarree())
+        else:
+            # print(f"code not in given malarial isocodes: {tdwg_code}")
+            ax.add_geometries([country.geometry], ccrs.PlateCarree(),
+                              facecolor='white',
+                              label=tdwg_code)
+
+    all_map_isos = [country.attributes['LEVEL3_COD'] for country in tdwg3_shp.records()]
+    missed_names = [x for x in tdwg3_region_codes if x not in all_map_isos]
+    print(f'iso codes not plotted on map: {missed_names}')
+    # plt.show()
+    plt.tight_layout()
+    # change the fontsize
+
+    plt.savefig(output_path, dpi=400, bbox_inches='tight')
+    plt.close()
+    plt.cla()
+    plt.clf()
+
 def plot_malarial_regions():
     codes = get_tdwg3_codes()
-    plot_countries(codes, 'Historical Malarial Regions',
+    plot_countries(codes,
                    os.path.join(_dist_output_dir, 'malarial_countries.jpg'))
 
 
