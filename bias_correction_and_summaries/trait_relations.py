@@ -77,6 +77,8 @@ def make_heatmap(cooccur_df: pd.DataFrame, outfile: str):
     plt.xlabel('')
     plt.ylabel('')
 
+    plt.xticks(rotation=45,
+               ha='right', rotation_mode='anchor')
     plt.yticks(rotation=0)
 
     f.tight_layout()

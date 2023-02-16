@@ -88,8 +88,6 @@ def plot_number_species_in_regions(df: pd.DataFrame, output_path: str, title: st
     cbar1.ax.tick_params(labelsize=30)
     # cbar1 = plt.colorbar(sm, ax=ax, shrink=0.7)
     # cbar1.set_label('Test')
-    # plt.tight_layout()
-    # change the fontsize
 
     plt.savefig(output_path, dpi=400, bbox_inches='tight')
     plt.close()
@@ -240,9 +238,6 @@ def plot_countries(tdwg3_region_codes: List[str], output_path: str):
     all_map_isos = [country.attributes['LEVEL3_COD'] for country in tdwg3_shp.records()]
     missed_names = [x for x in tdwg3_region_codes if x not in all_map_isos]
     print(f'iso codes not plotted on map: {missed_names}')
-    # plt.show()
-    plt.tight_layout()
-    # change the fontsize
 
     plt.savefig(output_path, dpi=400, bbox_inches='tight')
     plt.close()

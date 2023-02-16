@@ -62,7 +62,8 @@ def plot_corrected_means(vars_to_compare: List[str], out_filename: str, scale=Tr
             label='Corrected Data')
     plt.bar(X_axis + 1.5 * width, all_means, width=width, edgecolor='black', label='Underlying Pop.')
 
-    plt.xticks(X_axis + width / 2, tidy_var_names(labelled_traits.describe().columns.tolist()), rotation=65)
+    plt.xticks(X_axis + width / 2, tidy_var_names(labelled_traits.describe().columns.tolist()), rotation=45,
+               ha='right', rotation_mode='anchor')
     plt.legend()
     plt.xlabel('Trait')
     plt.ylabel(ylab)
