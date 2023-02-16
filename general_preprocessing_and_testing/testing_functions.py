@@ -9,7 +9,6 @@ from sklearn.metrics import accuracy_score, precision_score, f1_score, fbeta_sco
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import GridSearchCV
 
-
 beta = 0.5
 
 
@@ -75,10 +74,9 @@ class FeatureModel:
 class bnn_scores:
     feature_model = False
 
-    def __init__(self, name, log_dir, grid_search_param_grid=None, init_kwargs=None):
+    def __init__(self, name, log_dir):
         self.name = name
         self.log_dir = log_dir
-        self.grid_search_param_grid = grid_search_param_grid
         self.accuracies = []
         self.y_reals = []
         self.predict_probas = []
@@ -95,10 +93,12 @@ class bnn_scores:
     def add_cv_scores(self, transformed_train_data, y_train, transformed_test_data, y_test,
                       train_weights=None,
                       test_weights=None):
+        y_train_copy = y_train.copy(deep=True)
+        y_test_copy = y_test.copy(deep=True)
         import np_bnn as bn
-        rseed = 1234
-        train_dat = bn.get_data(transformed_train_data, y_train,
-                                seed=rseed,
+
+        train_dat = bn.get_data(transformed_train_data, y_train_copy,
+                                seed=None,
                                 testsize=0,
                                 randomize_order=False,
                                 instance_id=None, from_file=False)
@@ -112,7 +112,7 @@ class bnn_scores:
                              prior_f=1,  # 0) uniform, 1) normal, 2) Cauchy, 3) Laplace
                              p_scale=1,
                              # std for Normal, scale parameter for Cauchy and Laplace, boundaries for Uniform
-                             seed=rseed,
+                             seed=None,
                              init_std=0.1,  # st dev of the initial weights
                              instance_weights=train_weights)
 
@@ -130,8 +130,8 @@ class bnn_scores:
         # run MCMC
         bn.run_mcmc(bnn_model, mcmc, logger)
 
-        test_dat = bn.get_data(transformed_test_data, y_test,
-                               seed=rseed,
+        test_dat = bn.get_data(transformed_test_data, y_test_copy,
+                               seed=None,
                                testsize=1,
                                randomize_order=False,
                                instance_id=None, from_file=False)
@@ -148,24 +148,24 @@ class bnn_scores:
 
         y_pred = self.get_y_preds(post_prob_predictions)
         y_proba = post_prob_predictions[:, 1]
-        self.y_reals.append(y_test)
+        self.y_reals.append(y_test_copy)
         self.predict_probas.append(y_proba)
 
         if test_weights is None:
-            self.accuracies.append(accuracy_score(y_test, y_pred))
+            self.accuracies.append(accuracy_score(y_test_copy, y_pred))
             self.precisions.append(
-                precision_score(y_test, y_pred))
-            self.fones.append(f1_score(y_test, y_pred))
-            self.recalls.append(recall_score(y_test, y_pred))
-            self.fbetas.append(fbeta_score(y_test, y_pred, beta=beta))
+                precision_score(y_test_copy, y_pred))
+            self.fones.append(f1_score(y_test_copy, y_pred))
+            self.recalls.append(recall_score(y_test_copy, y_pred))
+            self.fbetas.append(fbeta_score(y_test_copy, y_pred, beta=beta))
 
         else:
-            self.accuracies.append(accuracy_score(y_test, y_pred, sample_weight=test_weights))
+            self.accuracies.append(accuracy_score(y_test_copy, y_pred, sample_weight=test_weights))
             self.precisions.append(
-                precision_score(y_test, y_pred, sample_weight=test_weights))
-            self.fones.append(f1_score(y_test, y_pred, sample_weight=test_weights))
-            self.recalls.append(recall_score(y_test, y_pred, sample_weight=test_weights))
-            self.fbetas.append(fbeta_score(y_test, y_pred, sample_weight=test_weights, beta=beta))
+                precision_score(y_test_copy, y_pred, sample_weight=test_weights))
+            self.fones.append(f1_score(y_test_copy, y_pred, sample_weight=test_weights))
+            self.recalls.append(recall_score(y_test_copy, y_pred, sample_weight=test_weights))
+            self.fbetas.append(fbeta_score(y_test_copy, y_pred, sample_weight=test_weights, beta=beta))
             self.test_weights.append(test_weights)
 
 

@@ -78,16 +78,18 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
 
     import category_encoders as ce
     from sklearn.compose import ColumnTransformer
-
+    #use copies
+    X_copy = X.copy(deep=True)
+    y_copy = y.copy(deep=True)
     if train_index is not None and test_index is not None:
         # Note iloc select by position rather than index label
-        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+        X_train, X_test = X_copy.iloc[train_index], X_copy.iloc[test_index]
+        y_train, y_test = y_copy.iloc[train_index], y_copy.iloc[test_index]
     else:
-        X_train = X
-        X_test = X
-        y_train = y
-        y_test = y
+        X_train = X_copy
+        X_test = X_copy
+        y_train = y_copy
+        y_test = y_copy
 
     if (train_index is not None and test_index is None) or (test_index is not None and train_index is None):
         raise ValueError
@@ -121,7 +123,7 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
 
     if variance is not None:
         # Remove binary features with 0 or 1 in variance% of the samples
-        bin_features_to_encode = [c for c in X.columns if c in BINARY_VARS]
+        bin_features_to_encode = [c for c in X_copy.columns if c in BINARY_VARS]
         bin_variance_selector = VarianceThreshold(threshold=(variance * (1 - variance)))
         variance_selection_transformer = ColumnTransformer(
             transformers=[

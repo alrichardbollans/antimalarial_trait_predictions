@@ -83,7 +83,7 @@ def compare_to_selection_probability():
     labelled_number_of_surprises = labelled_surprises[TARGET_COLUMN].sum()
     labelled_len_suprises_check = len(labelled_surprises.index)
 
-    data = pd.read_csv(os.path.join(_output_path, 'in_the_wild', 'itw_prec.csv'))[chosen_model]
+    data = pd.read_csv(os.path.join(_output_path, 'in_the_wild', '10_10', 'itw_prec.csv'))[chosen_model]
     data = (data,)
     bootstrap_result = scipy.stats.bootstrap(data, np.mean, confidence_level=0.95)
 
@@ -100,8 +100,6 @@ def compare_to_selection_probability():
          'len': [len_suprises_check, len_suprises_check, len_suprises_check, labelled_len_suprises_check]},
         index=['unlabelled', 'upperlim', 'lowerlim', 'labelled']).to_csv(
         os.path.join(_predictions_output_dir, 'surprises.csv'))
-
-
 
 
 def main():
