@@ -2,9 +2,10 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from import_trait_data import TARGET_COLUMN, BINARY_VARS, DISCRETE_VARS, TRAITS_WITH_NANS
+from import_trait_data import TARGET_COLUMN, BINARY_VARS, TRAITS_WITH_NANS, CONTINUOUS_VARS
 
 apriori_features_to_target_encode = ['Genus', 'Family']
 all_features_to_target_encode = apriori_features_to_target_encode + ['kg_mode']
@@ -73,12 +74,12 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
                            unlabelled_data: pd.DataFrame = None,
                            impute: bool = True, variance: float = None,
                            categorical_features: List[str] = None,
-                           scale: bool = True):
+                           scale: bool = True, PCA_cont_vars: bool = False):
     from sklearn.feature_selection import VarianceThreshold
 
     import category_encoders as ce
     from sklearn.compose import ColumnTransformer
-    #use copies
+    # use copies
     X_copy = X.copy(deep=True)
     y_copy = y.copy(deep=True)
     if train_index is not None and test_index is not None:
@@ -156,7 +157,7 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
         variance_X_test = encoded_X_test
         variance_unlabelled = encoded_unlabelled
 
-    # Impute missing data values
+
     if scale:
         cols_to_scale = [x for x in variance_X_train.columns if x != TARGET_COLUMN]
         # Scale data using unlabelled data.
@@ -188,6 +189,7 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
         X_test_scaled = variance_X_test
         unlabelled_scaled = variance_unlabelled
 
+    # Impute missing data values
     if impute:
         if not scale:
             raise ValueError('Better to scale before imputing')
@@ -200,15 +202,48 @@ def do_basic_preprocessing(X: pd.DataFrame, y: pd.DataFrame, train_index=None, t
                                              unlabelled=unlabelled_scaled)
         else:
             imputed_unlabelled = unlabelled_scaled
+    else:
 
+        imputed_X_train = X_train_scaled
+        imputed_X_test = X_test_scaled
+        imputed_unlabelled = unlabelled_scaled
+
+    if PCA_cont_vars:
+        if not scale:
+            raise ValueError('Better to scale before PCA')
+        cols_to_PCA = [x for x in CONTINUOUS_VARS if x in imputed_X_train.columns]
+        # Scale data using unlabelled data.
+        standard_PCA = ColumnTransformer(
+            transformers=[
+                ("PCA_cont_vars", PCA(n_components=0.8),
+                 cols_to_PCA)
+            ],
+            remainder='passthrough', verbose_feature_names_out=False
+
+        )
+        all_selected_data = pd.concat([imputed_X_train, imputed_unlabelled])
+        standard_PCA.fit(all_selected_data)
+        X_train_pcad = pd.DataFrame(standard_PCA.transform(imputed_X_train),
+                                    index=imputed_X_train.index,
+                                    columns=standard_PCA.get_feature_names_out())
+        X_test_pcad = pd.DataFrame(standard_PCA.transform(imputed_X_test),
+                                   index=imputed_X_test.index,
+                                   columns=standard_PCA.get_feature_names_out())
+
+        if unlabelled_data is not None:
+            unlabelled_pcad = pd.DataFrame(standard_PCA.transform(imputed_unlabelled),
+                                           index=imputed_unlabelled.index,
+                                           columns=standard_PCA.get_feature_names_out())
+        else:
+            unlabelled_pcad = imputed_unlabelled
+        if unlabelled_data is not None:
+            pd.testing.assert_index_equal(unlabelled_data.index, unlabelled_pcad.index)
+        pd.testing.assert_index_equal(X_train.index, X_train_pcad.index)
+        pd.testing.assert_index_equal(X_test.index, X_test_pcad.index)
+        return X_train_pcad, X_test_pcad, unlabelled_pcad
+    else:
         pd.testing.assert_index_equal(X_train.index, imputed_X_train.index)
         pd.testing.assert_index_equal(X_test.index, imputed_X_test.index)
         if unlabelled_data is not None:
             pd.testing.assert_index_equal(unlabelled_data.index, imputed_unlabelled.index)
         return imputed_X_train, imputed_X_test, imputed_unlabelled
-    else:
-        pd.testing.assert_index_equal(X_train.index, X_train_scaled.index)
-        pd.testing.assert_index_equal(X_test.index, X_test_scaled.index)
-        if unlabelled_data is not None:
-            pd.testing.assert_index_equal(unlabelled_data.index, unlabelled_scaled.index)
-        return X_train_scaled, X_test_scaled, unlabelled_scaled

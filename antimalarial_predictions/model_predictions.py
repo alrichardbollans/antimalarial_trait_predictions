@@ -46,7 +46,8 @@ def make_predictions():
                                unlabelled_data=unlab_X,
                                categorical_features=all_features_to_target_encode,
                                impute=True,
-                               scale=True)
+                               scale=True,
+                               PCA_cont_vars=True)
     pd.testing.assert_index_equal(unlabelled_data.index, imputed_unlabelled.index)
     for model in models:
         y_pred, y_proba = model.predict_on_unlabelled_data(imputed_X_train, y,

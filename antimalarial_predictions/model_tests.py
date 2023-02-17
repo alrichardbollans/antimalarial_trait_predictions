@@ -66,7 +66,7 @@ def biased_case(k: int = 10, num_iterations: int = 10):
                                    unlab_X,
                                    categorical_features=all_features_to_target_encode,
                                    impute=True,
-                                   scale=True)
+                                   scale=True, PCA_cont_vars=True)
 
         for model in models:
             if model.feature_model:
@@ -129,7 +129,7 @@ def in_the_wild_test(k: int = 10, num_iterations: int = 10):
                                    unlab_X,
                                    categorical_features=all_features_to_target_encode,
                                    impute=True,
-                                   scale=True)
+                                   scale=True, PCA_cont_vars=True)
 
         train_weights = all_weights.iloc[train_index]
         test_weights = all_weights.iloc[test_index]
@@ -170,9 +170,12 @@ def main():
 
     check_twinning()
 
-    biased_case(10, 10)
-    # in_the_wild_test(10, 10)
+    biased_case(2, 5)
 
+    in_the_wild_test(2, 5)
+
+    biased_case(10, 10)
+    in_the_wild_test(10, 10)
 
 if __name__ == '__main__':
     main()
