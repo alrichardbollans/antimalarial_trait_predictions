@@ -16,6 +16,7 @@ _output_path = resource_filename(__name__, 'outputs')
 
 _predictions_output_dir = os.path.join(_output_path, 'predictions')
 _unlabelled_output_csv = os.path.join(_predictions_output_dir, 'unlabelled_output.csv')
+_labelled_output_csv = os.path.join(_predictions_output_dir, 'labelled_output.csv')
 
 
 def make_predictions():
@@ -49,6 +50,8 @@ def make_predictions():
                                scale=True,
                                PCA_cont_vars=True)
     pd.testing.assert_index_equal(unlabelled_data.index, imputed_unlabelled.index)
+    pd.testing.assert_index_equal(X.index, imputed_X_train.index)
+    pd.testing.assert_index_equal(labelled_data.index, imputed_X_train.index)
     for model in models:
         y_pred, y_proba = model.predict_on_unlabelled_data(imputed_X_train, y,
                                                            imputed_unlabelled,
@@ -57,7 +60,15 @@ def make_predictions():
         unlabelled_data[model.name + ' Probability Estimate'] = y_proba[:, 1]
         unlabelled_data[model.name + ' Prediction'] = y_pred
 
+        labelled_y_pred, labelled_y_proba = model.predict_on_unlabelled_data(imputed_X_train, y,
+                                                                             imputed_X_train,
+                                                                             train_weights=all_weights)
+
+        labelled_data[model.name + ' Probability Estimate'] = labelled_y_proba[:, 1]
+        labelled_data[model.name + ' Prediction'] = labelled_y_pred
+
     unlabelled_data.to_csv(_unlabelled_output_csv)
+    labelled_data.to_csv(_labelled_output_csv)
 
 
 def compare_to_selection_probability():
@@ -105,7 +116,7 @@ def compare_to_selection_probability():
 
 def main():
     make_predictions()
-    compare_to_selection_probability()
+    # compare_to_selection_probability()
 
 
 if __name__ == '__main__':
