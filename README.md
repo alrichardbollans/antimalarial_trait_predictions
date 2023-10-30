@@ -1,7 +1,6 @@
-Repository for Frontiers in Plant Science paper: "Machine Learning Enhances Prediction of Plants as Potential
+Repository related to sampling and bioassays of species predicted byt the model developed in:
+Frontiers in Plant Science paper: "Machine Learning Enhances Prediction of Plants as Potential
 Sources of Antimalarials" Richard-Bollans et al. (2023) doi: 10.3389/fpls.2023.1173328
-
-All finalised trait data and analysis are archived in https://doi.org/10.5281/zenodo.7836732.
 
 ## Licence
 
