@@ -7,18 +7,20 @@ from wcvp_download import wcvp_accepted_columns
 from wcvp_name_matching import get_accepted_info_from_names_in_column
 
 _predictions_output_dir = os.path.join('..', 'antimalarial_predictions', 'outputs', 'predictions')
-_unlabelled_output_csv = os.path.join(_predictions_output_dir, 'unlabelled_output.csv')
-_labelled_output_csv = os.path.join(_predictions_output_dir, 'labelled_output.csv')
+_old_unlabelled_predictions_csv = os.path.join(_predictions_output_dir, 'unlabelled_output.csv')
+_old_labelled_predictions_csv = os.path.join(_predictions_output_dir, 'labelled_output.csv')
 _input_path = resource_filename(__name__, "inputs")
-updated_prediction_csv = os.path.join(_input_path, 'SVC_trait_based_predictions_WCVP_V11.csv')
-updated_unlabelled_prediction_csv = os.path.join(_input_path, 'Unlabelled_SVC_trait_based_predictions_WCVP_V11.csv')
-WCVP_VERSION = '11'
+prediction_input_path = os.path.join(_input_path, 'prediction_samples')
+
+updated_prediction_csv = os.path.join(prediction_input_path, 'SVC_trait_based_predictions_WCVP_V12.csv')
+updated_unlabelled_prediction_csv = os.path.join(prediction_input_path, 'Unlabelled_SVC_trait_based_predictions_WCVP_V12.csv')
+WCVP_VERSION = None
 
 
 def update_predictions():
     # Previous data using V7
-    _lab_input = pd.read_csv(_labelled_output_csv)
-    _unlab_input = pd.read_csv(_unlabelled_output_csv)
+    _lab_input = pd.read_csv(_old_labelled_predictions_csv)
+    _unlab_input = pd.read_csv(_old_unlabelled_predictions_csv)
 
     svc_predictions = pd.concat([_lab_input, _unlab_input])[
         ['Accepted_Name', 'Activity_Antimalarial', 'SVC Probability Estimate']]
@@ -51,24 +53,26 @@ def update_predictions():
     svc_predictions_acc_unlabelled.to_csv(updated_unlabelled_prediction_csv)
 
 
-def merge_with_sent_samples():
-    # Compounds actually sent
-    species_actually_sent = pd.read_csv(os.path.join('inputs', 'sampled_from_predictions.csv'))
+def update_sent_samples():
+    # prediction samples. Needs updating when samples sent back.
+    species_actually_sent = pd.read_csv(os.path.join(prediction_input_path, 'sampled_from_predictions.csv'))
     species_actually_sent = get_accepted_info_from_names_in_column(species_actually_sent, 'Sampled', wcvp_version=WCVP_VERSION)
-    species_actually_sent.to_csv(os.path.join('inputs', 'sampled_from_predictions_V11.csv'))
+    species_actually_sent.to_csv(os.path.join(prediction_input_path, 'sampled_from_predictions_V12.csv'))
 
-    species_actually_sent = pd.read_csv(os.path.join('inputs', 'sampled_from_predictions_V11.csv'), index_col=0)
+    # ethno and random samples
 
-    with_info = pd.read_csv(updated_unlabelled_prediction_csv, index_col=0)
-    species_actually_sent = species_actually_sent[species_actually_sent[wcvp_accepted_columns['rank']] == 'Species']
+def merge_sent_samples_with_svc_predictions():
+    species_actually_sent = pd.read_csv(os.path.join('inputs', 'sampled_from_predictions_V12.csv'), index_col=0)
+
+    with_info = pd.read_csv(updated_unlabelled_prediction_csv, index_col=0)[[wcvp_accepted_columns['species'], 'SVC Probability Estimate']]
 
     actually_sent_with_info = with_info[
-        with_info[wcvp_accepted_columns['name_w_author']].isin(species_actually_sent[wcvp_accepted_columns['name_w_author']].values)]
-    pandas.testing.assert_series_equal(actually_sent_with_info[wcvp_accepted_columns['name_w_author']],
-                                       species_actually_sent[wcvp_accepted_columns['name_w_author']], check_index=False)
-    actually_sent_with_info.to_csv(os.path.join(_input_path, 'species_sent_for_sampling_with_SVC_trait_based_predictions_WCVP_V11.csv'))
+        with_info[wcvp_accepted_columns['species']].isin(species_actually_sent[wcvp_accepted_columns['species']].values)]
+    pandas.testing.assert_series_equal(actually_sent_with_info[wcvp_accepted_columns['species']],
+                                       species_actually_sent[wcvp_accepted_columns['species']], check_index=False)
+    actually_sent_with_info.to_csv(os.path.join(_input_path, 'species_sent_for_sampling_with_SVC_trait_based_predictions_WCVP_V12.csv'))
 
 
 if __name__ == '__main__':
     update_predictions()
-    merge_with_sent_samples()
+    update_sent_samples()
