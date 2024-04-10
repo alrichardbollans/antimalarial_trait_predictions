@@ -114,8 +114,55 @@ def compare_to_selection_probability():
         os.path.join(_predictions_output_dir, 'surprises.csv'))
 
 
+def make_predictions_without_bc():
+    assert 'In_Malarial_Region' not in prediction_vars_to_use
+    assert 'Tested_for_Alkaloids' not in prediction_vars_to_use
+    ### Data
+    labelled_data = LABELLED_TRAITS.copy()
+    X, y = basic_data_prep(labelled_data, prediction_vars_to_use, dropna_rows=False)
+    # Check indices are the same
+    pd.testing.assert_index_equal(X.index, labelled_data.index)
+
+    unlabelled_data = UNLABELLED_TRAITS.copy(deep=True)
+    unlab_X, unlab_y = basic_data_prep(unlabelled_data, prediction_vars_to_use)
+
+    # Just use best performing model
+    svc_scores = clf_scores(chosen_model, SVC, grid_search_param_grid={'C': [0.1, 1, 10],
+                                                                       'class_weight': ['balanced', None,
+                                                                                        {0: 0.4, 1: 0.6}]},
+                            init_kwargs={'probability': True})
+
+    models = [svc_scores]
+
+    imputed_X_train, imputed_X_test, imputed_unlabelled = \
+        do_basic_preprocessing(X, y,
+                               unlabelled_data=unlab_X,
+                               categorical_features=all_features_to_target_encode,
+                               impute=True,
+                               scale=True,
+                               PCA_cont_vars=True)
+    pd.testing.assert_index_equal(unlabelled_data.index, imputed_unlabelled.index)
+    pd.testing.assert_index_equal(X.index, imputed_X_train.index)
+    pd.testing.assert_index_equal(labelled_data.index, imputed_X_train.index)
+    for model in models:
+        y_pred, y_proba = model.predict_on_unlabelled_data(imputed_X_train, y,
+                                                           imputed_unlabelled)
+
+        unlabelled_data[model.name + ' Probability Estimate'] = y_proba[:, 1]
+        unlabelled_data[model.name + ' Prediction'] = y_pred
+
+        labelled_y_pred, labelled_y_proba = model.predict_on_unlabelled_data(imputed_X_train, y,
+                                                                             imputed_X_train)
+
+        labelled_data[model.name + ' Probability Estimate'] = labelled_y_proba[:, 1]
+        labelled_data[model.name + ' Prediction'] = labelled_y_pred
+
+    unlabelled_data.to_csv(os.path.join(_predictions_output_dir,'example without bias correction', 'unlabelled_output.csv'))
+    labelled_data.to_csv(os.path.join(_predictions_output_dir,'example without bias correction', 'labelled_output.csv'))
+
 def main():
-    make_predictions()
+    # make_predictions()
+    make_predictions_without_bc()
     # compare_to_selection_probability()
 
 
