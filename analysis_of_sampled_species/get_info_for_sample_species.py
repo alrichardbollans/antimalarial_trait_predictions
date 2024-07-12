@@ -9,7 +9,7 @@ from pkg_resources import resource_filename
 from wcvp_download import wcvp_accepted_columns, plot_native_number_accepted_taxa_in_regions, get_distributions_for_accepted_taxa
 from wcvp_name_matching import get_genus_from_full_name
 
-from species_sampling import WCVP_VERSION, prediction_input_path
+from analysis_of_sampled_species import WCVP_VERSION, prediction_input_path
 
 _output_path = resource_filename(__name__, 'outputs')
 all_taxa_metabolite_data = pd.read_csv(all_taxa_metabolites_csv, index_col=0)
