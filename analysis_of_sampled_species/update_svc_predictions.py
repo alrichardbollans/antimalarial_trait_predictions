@@ -14,7 +14,7 @@ prediction_input_path = os.path.join(_input_path, 'prediction_samples')
 
 updated_prediction_csv = os.path.join(prediction_input_path, 'SVC_trait_based_predictions_WCVP_V12.csv')
 updated_unlabelled_prediction_csv = os.path.join(prediction_input_path, 'Unlabelled_SVC_trait_based_predictions_WCVP_V12.csv')
-WCVP_VERSION = None
+WCVP_VERSION = '12'
 
 
 def update_predictions():
