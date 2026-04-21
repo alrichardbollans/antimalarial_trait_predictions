@@ -1,2 +1,0 @@
-from update_svc_predictions import *
-from get_info_for_sample_species import PLANT_TARGET_COLUMN
